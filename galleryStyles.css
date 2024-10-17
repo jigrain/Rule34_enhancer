@@ -1,0 +1,71 @@
+/* galleryStyles.css */
+
+/* Стилі для модального вікна */
+#mediaModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    display: none;
+}
+
+/* Обгортка для контенту в модальному вікні */
+#mediaModal .contentWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Кнопка закриття */
+#mediaModal .closeButton {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+/* Іконка серця */
+#heart_icon {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    color: red;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+/* Стилі для елементів зображення та відео */
+#gallery_img, #gallery_video {
+    display: none;
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    margin: auto;
+}
+
+/* Стилі для навігаційних кнопок */
+#mediaModal .navButton {
+    border: none;
+    background: transparent;
+    position: absolute;
+    color: white;
+    font-size: 50px;
+    cursor: pointer;
+}
+
+#mediaModal .prevButton {
+    left: 10px;
+}
+
+#mediaModal .nextButton {
+    right: 10px;
+}
