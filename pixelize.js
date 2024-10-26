@@ -1,9 +1,15 @@
+// Функція для перевірки статусу пікселізації
+async function isPixelationEnabled() {
+  const data = await browser.storage.local.get('pixelateEnabled');
+  return data.pixelateEnabled || false;
+}
+
 // Отримуємо всі зображення
 const images = document.querySelectorAll('.image-list .thumb img.preview');
 
 // Відправляємо запит на завантаження кожного зображення через фоновий скрипт
 function fetchImageBackground(src, callback) {
-  chrome.runtime.sendMessage({ action: 'fetchImage', src: src }, callback);
+  browser.runtime.sendMessage({ action: 'fetchImage', src: src }, callback);
 }
 
 // Функція для зміни розміру зображення
@@ -16,19 +22,34 @@ function resizeImage(imageBitmap, scale = 0.1) {
   ctx.drawImage(imageBitmap, 0, 0, canvas.width, canvas.height);
 
   return new Promise(resolve => canvas.toBlob(resolve));
+  
 }
 
-// Основна функція обробки
+function getBaseUrl(url) {
+  const parsedUrl = new URL(url);
+  parsedUrl.search = ""; // Видаляємо параметри запиту
+  return parsedUrl.toString();
+}
+
+// Основна функція обробки пікселізації
 async function processImages() {
   for (let img of images) {
     const src = img.src;
+    const baseUrl = getBaseUrl(src); // Отримуємо базовий URL без параметрів
 
-    // Зберігаємо початкові розміри зображення
+    // Зберігаємо початкові розміри та оригінальний URL зображення, якщо ще не збережено
     const originalHeight = img.height;
     const originalWidth = img.width;
+    const originalUrlKey = `original-image-${baseUrl}`;
 
-    console.log('Original Height:', originalHeight);
-    console.log('Original Width:', originalWidth);
+    // Зберігаємо оригінальне посилання в localStorage та в dataset зображення
+    if (!localStorage.getItem(originalUrlKey)) {
+      console.log("Зберігаємо оригінальне посилання:", originalUrlKey);
+      localStorage.setItem(originalUrlKey, src);
+      img.dataset.originalUrl = src; // Зберігаємо оригінальний URL в dataset
+    } else {
+      img.dataset.originalUrl = localStorage.getItem(originalUrlKey); // Встановлюємо оригінал з localStorage
+    }
 
     try {
       // Завантажуємо зображення через фоновий скрипт
@@ -40,17 +61,14 @@ async function processImages() {
           // Створюємо нове посилання на зменшене зображення
           const resizedUrl = URL.createObjectURL(resizedBlob);
 
-          // Зберігаємо зображення в локальне сховище
-          const key = `image-${src}`;
-          localStorage.setItem(key, resizedUrl);
+          // Зберігаємо URL зменшеного зображення в локальному сховищі
+          const pixelatedUrlKey = `pixelated-image-${baseUrl}`;
+          localStorage.setItem(pixelatedUrlKey, resizedUrl);
 
-          // Змінюємо оригінальне зображення на зменшене
+          // Змінюємо зображення на зменшене
           img.src = resizedUrl;
-
-          // Встановлюємо збережені розміри до нового зображення
           img.style.width = `${originalWidth}px`;
           img.style.height = `${originalHeight}px`;
-
         } else {
           console.error(`Не вдалося завантажити зображення: ${src}`);
         }
@@ -62,5 +80,31 @@ async function processImages() {
   }
 }
 
-// Викликаємо функцію обробки зображень
-processImages();
+// Функція для відновлення оригінальних зображень
+function restoreOriginalImages() {
+  for (let img of images) {
+    const originalUrl = img.dataset.originalUrl; // Отримуємо оригінальне посилання з dataset
+
+    if (originalUrl) {
+      img.src = originalUrl; // Відновлюємо оригінальне зображення
+      const baseUrl = getBaseUrl(originalUrl);
+      localStorage.removeItem(`pixelated-image-${baseUrl}`); // Видаляємо збережене піксельне зображення
+    }
+  }
+}
+
+// Викликаємо функцію обробки зображень, якщо пікселізація увімкнена
+isPixelationEnabled().then((enabled) => {
+  if (enabled) processImages();
+});
+
+// Обробник повідомлень для оновлення статусу
+browser.runtime.onMessage.addListener((message) => {
+  if (message.action === 'updatePixelationStatus') {
+    if (message.enabled) {
+      processImages(); // Якщо увімкнено, запускаємо обробку
+    } else {
+      restoreOriginalImages(); // Якщо вимкнено, відновлюємо оригінальні зображення
+    }
+  }
+});

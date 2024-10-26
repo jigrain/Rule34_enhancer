@@ -1,29 +1,3 @@
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'fetchImage') {
-    fetch(message.src)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.blob();
-      })
-      .then(blob => {
-        sendResponse({ success: true, blob: blob });
-      })
-      .catch(error => {
-        console.error('Помилка завантаження:', error);
-        sendResponse({ success: false });
-      });
-
-    return true;  // Вказуємо, що відповідь буде асинхронною
-  }
-});
-
-//===============================================================================================
-//=========================LOAD FAVORITES==========================================
-//===============================================================================================
-
-// Функція для отримання та парсингу сторінок
 function fetchPage(url) {
     return fetch(url)
         .then(response => response.text())

@@ -8,28 +8,34 @@
     "64": "icons/icon.png"
   },
   
+  "web_accessible_resources": [
+    "galleryStyles.css"
+  ],
+  
   "permissions": [
     "https://api.rule34.xxx/*",
-	"storage",          
+	  "storage",          
     "activeTab", 
-	"cookies",
-	"tabs",
-	"https://wimg.rule34.xxx/*",
-	"https://rule34.xxx/*"
+	  "cookies",
+	  "tabs",
+	  "https://wimg.rule34.xxx/*",
+	  "https://rule34.xxx/*",
+    "contextMenus"
   ],
    "background": {
-    "scripts": ["background.js", "get_user_id.js"]
+    "scripts": ["load_favorites_background.js", "get_user_id.js", "pixelize_background.js"]
 	},
 
   "content_scripts": [
     {
       "matches": ["*://rule34.xxx/*"],
+	    "css": ["galleryStyles.css"],
       "js": ["gallery_mod.js"]
     },
-	//{
-    //  "matches": ["*://rule34.xxx/*"],
-    //  "js": ["pixelize.js"]
-    //}
+	{
+     "matches": ["*://rule34.xxx/*"],
+     "js": ["pixelize.js"]
+    },
 	{
       "matches": ["*://rule34.xxx/*"],
       "js": ["load_favorites.js"]
