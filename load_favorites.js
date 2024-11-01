@@ -1,15 +1,19 @@
+// Додаємо стилі для кнопок і текстового блоку
+let link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css';
+document.head.appendChild(link);
 
-// Додаємо стилі для кнопки на початку скрипта
 const style = document.createElement('style');
 style.innerHTML = `
 #controlContainer {
     display: flex;
     justify-content: start;
     align-items: center;
-    gap: 10px; /* Відстань між кнопкою і полем введення */
+    gap: 10px; /* Відстань між елементами */
     margin: 10px auto auto 20px;
 }
-#openGalleryButton {
+#openGalleryButton, #searchButton {
     padding: 10px 20px;
     background-color: #4CAF50;
     color: white;
@@ -28,45 +32,88 @@ style.innerHTML = `
     border: 1px solid #ddd;
     border-radius: 5px;
 }
+#favoritesCount {
+    font-size: 12px;
+    color: #333;
+    margin-right: 10px;
+    font-weight: bold;
+}
+#refreshButton {
+    background-color: #FF8C00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 10px;
+}
+#refreshButton:hover {
+    background-color: #FFA500;
+}
+.fa-refresh {
+    margin-right: 5px;
+}
 `;
 document.head.appendChild(style);
 
+// Функція для перевірки та відображення кількості збережених favoritesData
+async function displayFavoritesCount() {
+    const { favoritesData } = await browser.storage.local.get('favoritesData');
+    const count = favoritesData ? favoritesData.length : 0;
+    
+    const favoritesCount = document.createElement('div');
+    favoritesCount.id = 'favoritesCount';
+    favoritesCount.innerText = `Favorites: ${count} posts`;
+    
+    return favoritesCount;
+}
 
-// Запитуємо user_id у фонового скрипта
-browser.runtime.sendMessage({ action: 'getUserId' }, (response) => {
+// Додаємо елементи на сторінку
+browser.runtime.sendMessage({ action: 'getUserId' }, async (response) => {
     const userId = response.userId;
 
     if (userId) {
         console.log('Отриманий user_id:', userId);
 
-        // Виконуємо перевірку URL
         if (currentUrl.includes("page=favorites") && currentUrl.includes(`id=${userId}`)) {
             console.log('URL містить потрібні параметри та збігається з user_id');
-            
-            // Надсилаємо запит на запуск парсингу
-            browser.runtime.sendMessage({
-                action: 'startParsing',
-                baseUrl: `https://rule34.xxx/index.php?page=favorites&s=view&id=${userId}`,
-                pidStep: 50
-            });
+            console.log(PostList);
 
-            // Створюємо контейнер для кнопки та поля введення
+            // Створюємо контейнер для кнопок і поля введення
             const contentDiv = document.getElementById('header');
             const controlContainer = document.createElement('div');
             controlContainer.id = 'controlContainer';
 
+            // Додаємо текстовий блок із кількістю збережених елементів
+            const favoritesCount = await displayFavoritesCount();
+
+            const refreshButton = document.createElement('button');
+            refreshButton.id = 'refreshButton';
+            refreshButton.innerHTML = '<i class="fa fa-refresh"></i>Refresh';
+            refreshButton.addEventListener("click", () => syncFavorites(userId));
+
             const openGalleryButton = document.createElement('button');
             openGalleryButton.innerText = 'Open Gallery';
             openGalleryButton.id = 'openGalleryButton';
+            openGalleryButton.addEventListener("click", () => Open_Favorites_Gallery(userId));
 
             const SearchFavorites = document.createElement('input');
-            SearchFavorites.type = "text"
+            SearchFavorites.type = "text";
             SearchFavorites.id = "search_input";
             SearchFavorites.placeholder = "Search favorites...";
 
+            // Кнопка пошуку за тегами
+            const searchButton = document.createElement('button');
+            searchButton.innerText = 'Search by Tags';
+            searchButton.id = 'searchButton';
+            searchButton.addEventListener("click", searchFavoritesByTags);
+
             // Додаємо кнопку та поле введення до контейнера
+            controlContainer.appendChild(favoritesCount);
+            controlContainer.appendChild(refreshButton);
             controlContainer.appendChild(openGalleryButton);
             controlContainer.appendChild(SearchFavorites);
+            controlContainer.appendChild(searchButton);
 
             // Додаємо контейнер до contentDiv
             contentDiv.appendChild(controlContainer);
@@ -78,7 +125,165 @@ browser.runtime.sendMessage({ action: 'getUserId' }, (response) => {
     }
 });
 
-openGalleryButton.addEventListener('click', () => {
-    console.log('Open Gallery button clicked');
-    // Можна додати тут код, який виконується при натисканні кнопки
-});
+// Оптимізована функція Open_Favorites_Gallery
+async function Open_Favorites_Gallery(userId) {
+    // Перевіряємо, чи вже є збережені дані в favoritesData
+    const { favoritesData } = await browser.storage.local.get('favoritesData');
+    
+    if (favoritesData && favoritesData.length > 0) {
+        console.log('favoritesData вже існує в локальному сховищі. Завантаження з локального сховища.');
+
+        // Заповнюємо PostList збереженими даними
+        PostList = favoritesData.map(item => ({ fileUrl: item.file_url }));
+        console.log('PostList сформовано з локального сховища:', PostList);
+
+        // Імпортуємо і викликаємо методи з gallery_mod.js
+        import(chrome.runtime.getURL('gallery_mod.js')).then((module) => {
+            module.createModal();
+            module.showModal(0);
+        }).catch(err => {
+            console.error("Error loading gallery_mod.js: ", err);
+        });
+    } else {
+        console.log('favoritesData не знайдено, початок нового запиту.');
+
+        // Якщо локальні дані відсутні, робимо запит і зберігаємо їх
+        browser.runtime.sendMessage({
+            action: 'startParsing',
+            baseUrl: `https://rule34.xxx/index.php?page=favorites&s=view&id=${userId}`,
+            pidStep: 50
+        }, async (response) => {
+            const collectedIds = response.collectedIds;
+            console.log('Отримані зібрані ID з background:', collectedIds);
+
+            let detailedInfo = [];
+
+            for (const id of collectedIds) {
+                const details = await fetchDetails(id);
+                if (details) {
+                    detailedInfo.push(details);
+                }
+            }
+
+            // Зберігаємо зібрані дані в локальному сховищі
+            await browser.storage.local.set({ favoritesData: detailedInfo });
+            console.log('Детальна інформація збережена в локальному сховищі:', detailedInfo);
+
+            // Заповнюємо PostList зібраними file_url
+            PostList = detailedInfo.map(item => ({ fileUrl: item.file_url }));
+            console.log('PostList сформовано з file_url:', PostList);
+
+            // Імпортуємо і викликаємо методи з gallery_mod.js
+            import(chrome.runtime.getURL('gallery_mod.js')).then((module) => {
+                module.createModal();
+                module.showModal(0);
+            }).catch(err => {
+                console.error("Error loading gallery_mod.js: ", err);
+            });
+        });
+    }
+}
+
+// Функція для отримання даних про кожен id
+async function fetchDetails(id) {
+    const url = `https://api.rule34.xxx/index.php?page=dapi&q=index&json=1&s=post&id=${id}`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.error(`Помилка при отриманні даних для ID ${id}: Статус ${response.status}`);
+            return null;
+        }
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+            const { file_url, preview_url, tags } = data[0];
+            console.log(`Отримані дані для ID ${id}:`, { file_url, preview_url, tags });
+            return { id, file_url, preview_url, tags };
+        } else {
+            console.warn(`Дані не знайдені для ID ${id}`);
+            return null;
+        }
+    } catch (error) {
+        console.error(`Помилка при отриманні JSON для ID ${id}:`, error);
+        return null;
+    }
+}
+
+async function searchFavoritesByTags() {
+    const searchInput = document.getElementById('search_input').value.trim().toLowerCase();
+    
+    // Завантажуємо favoritesData з локального сховища
+    const { favoritesData } = await browser.storage.local.get('favoritesData');
+    if (!favoritesData || favoritesData.length === 0) {
+        console.log('Favorites data is empty or not found.');
+        return;
+    }
+
+    // Фільтруємо пости, які містять введені теги
+    const filteredPosts = favoritesData.filter(post => {
+        return post.tags.toLowerCase().includes(searchInput);
+    });
+
+    // Очищуємо контейнер content і додаємо результати пошуку
+    const contentContainer = document.getElementById('content');
+    contentContainer.innerHTML = ''; // Очищення контейнера
+
+    // Додаємо елементи для кожного знайденого поста
+    filteredPosts.forEach(post => {
+        const postElement = document.createElement('span');
+        postElement.className = 'thumb';
+
+        // Заповнюємо HTML для кожного знайденого поста
+        postElement.innerHTML = `
+            <a href="index.php?page=post&amp;s=view&amp;id=${post.id}" id="p${post.id}" onclick="document.location='index.php?page=post&amp;s=view&amp;id=${post.id}'; return false;">
+                <img src="${post.preview_url}" title="" border="0" alt="image_thumb" style="">
+            </a><br>
+            <a href="#" onclick="document.location='index.php?page=favorites&amp;s=delete&amp;id=${post.id}'; return false;">
+                <b>Remove</b>
+            </a>
+        `;
+
+        contentContainer.appendChild(postElement);
+    });
+
+    console.log(`Знайдено ${filteredPosts.length} постів за тегом "${searchInput}".`);
+}
+
+// Функція для синхронізації локальних даних з актуальним списком улюблених
+async function syncFavorites(userId) {
+    // Отримуємо актуальні ID улюблених постів користувача
+    browser.runtime.sendMessage({
+        action: 'startParsing',
+        baseUrl: `https://rule34.xxx/index.php?page=favorites&s=view&id=${userId}`,
+        pidStep: 50
+    }, async (response) => {
+        const collectedIds = response.collectedIds;
+        console.log('Отримані зібрані ID з background:', collectedIds);
+
+        // Завантажуємо favoritesData з локального сховища
+        const { favoritesData } = await browser.storage.local.get('favoritesData') || [];
+        const existingIds = favoritesData.map(item => item.id);
+
+        // Знаходимо ID, які необхідно видалити
+        const idsToRemove = existingIds.filter(id => !collectedIds.includes(id));
+
+        // Видаляємо елементи, яких немає в новому списку
+        const updatedFavoritesData = favoritesData.filter(item => !idsToRemove.includes(item.id));
+
+        // Знаходимо нові ID, які потрібно додати
+        const idsToAdd = collectedIds.filter(id => !existingIds.includes(id));
+        for (const id of idsToAdd) {
+            const details = await fetchDetails(id);
+            if (details) {
+                updatedFavoritesData.push(details);
+            }
+        }
+
+        // Оновлюємо локальне сховище
+        await browser.storage.local.set({ favoritesData: updatedFavoritesData });
+        console.log('Синхронізація завершена. Оновлені дані збережено в локальному сховищі.');
+
+        // Оновлюємо кількість в favoritesCount
+        document.getElementById('favoritesCount').innerText = `Favorites: ${updatedFavoritesData.length} posts`;
+    });
+}

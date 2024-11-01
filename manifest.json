@@ -3,13 +3,14 @@
   "manifest_version": 2,
   "name": "Rule34 Enhancer",
   "version": "1.0",
-  "homepage_url": "https://github.com/mdn/webextensions-examples/tree/master/borderify",
+  "homepage_url": "https://github.com/jigrain/Rule34_enhancer",
   "icons": {
     "64": "icons/icon.png"
   },
   
   "web_accessible_resources": [
-    "galleryStyles.css"
+    "galleryStyles.css",
+    "gallery_mod.js"
   ],
   
   "permissions": [
@@ -30,7 +31,7 @@
     {
       "matches": ["*://rule34.xxx/*"],
 	    "css": ["galleryStyles.css"],
-      "js": ["gallery_mod.js"]
+      "js": ["main_search_img.js"]
     },
 	{
      "matches": ["*://rule34.xxx/*"],
@@ -38,6 +39,7 @@
     },
 	{
       "matches": ["*://rule34.xxx/*"],
+      "css": ["galleryStyles.css"],
       "js": ["load_favorites.js"]
     }
   ]
