@@ -1,8 +1,22 @@
 // Додаємо стилі для кнопок і текстового блоку
+let currentUrl = window.location.href;
+let PostList = [];
 let link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css';
 document.head.appendChild(link);
+
+browser.storage.local.get('favoritesData').then(result => {
+    if (!result.favoritesData) {
+        browser.storage.local.set({ favoritesData: [] }).then(() => {
+            console.log('favoritesData успішно ініціалізовано як порожній масив.');
+        }).catch(err => {
+            console.error('Помилка при ініціалізації favoritesData:', err);
+        });
+    }
+}).catch(err => {
+    console.error('Помилка при отриманні favoritesData:', err);
+});
 
 const style = document.createElement('style');
 style.innerHTML = `
@@ -139,7 +153,7 @@ async function Open_Favorites_Gallery(userId) {
 
         // Імпортуємо і викликаємо методи з gallery_mod.js
         import(chrome.runtime.getURL('gallery_mod.js')).then((module) => {
-            module.createModal();
+            module.createModal(true);
             module.showModal(0);
         }).catch(err => {
             console.error("Error loading gallery_mod.js: ", err);
@@ -180,6 +194,8 @@ async function Open_Favorites_Gallery(userId) {
             }).catch(err => {
                 console.error("Error loading gallery_mod.js: ", err);
             });
+
+            document.getElementById('favoritesCount').innerText = `Favorites: ${detailedInfo.length} posts`;
         });
     }
 }
@@ -193,14 +209,26 @@ async function fetchDetails(id) {
             console.error(`Помилка при отриманні даних для ID ${id}: Статус ${response.status}`);
             return null;
         }
-        const data = await response.json();
 
+        // Читаємо відповідь як текст, щоб перевірити на порожній вміст
+        const text = await response.text();
+
+        // Перевіряємо, чи відповідь не порожня
+        if (!text || text.trim().length === 0) {
+            console.warn(`Порожня відповідь для ID ${id}`);
+            return null;
+        }
+
+        // Парсимо текст у JSON
+        const data = JSON.parse(text);
+
+        // Перевіряємо, чи дані валідні і чи є потрібні поля
         if (data && data.length > 0) {
             const { file_url, preview_url, tags } = data[0];
             console.log(`Отримані дані для ID ${id}:`, { file_url, preview_url, tags });
             return { id, file_url, preview_url, tags };
         } else {
-            console.warn(`Дані не знайдені для ID ${id}`);
+            console.warn(`Дані не знайдені або JSON некоректний для ID ${id}`);
             return null;
         }
     } catch (error) {
@@ -209,6 +237,7 @@ async function fetchDetails(id) {
     }
 }
 
+// Функція для пошуку постів за тегами з підтримкою виключаючих тегів
 async function searchFavoritesByTags() {
     const searchInput = document.getElementById('search_input').value.trim().toLowerCase();
     
@@ -219,9 +248,25 @@ async function searchFavoritesByTags() {
         return;
     }
 
-    // Фільтруємо пости, які містять введені теги
+    // Розділяємо введений рядок на окремі теги
+    const tags = searchInput.split(/\s+/);
+    
+    // Розділяємо на обов’язкові та виключаючі теги
+    const requiredTags = tags.filter(tag => !tag.startsWith('-'));
+    const excludedTags = tags.filter(tag => tag.startsWith('-')).map(tag => tag.substring(1));
+
+    // Фільтруємо пости на основі тегів
     const filteredPosts = favoritesData.filter(post => {
-        return post.tags.toLowerCase().includes(searchInput);
+        const postTags = post.tags.toLowerCase();
+
+        // Перевірка наявності всіх обов’язкових тегів
+        const hasRequiredTags = requiredTags.every(tag => postTags.includes(tag));
+        
+        // Перевірка відсутності виключаючих тегів
+        const hasNoExcludedTags = excludedTags.every(tag => !postTags.includes(tag));
+        
+        // Повертаємо true, якщо пост відповідає всім умовам
+        return hasRequiredTags && hasNoExcludedTags;
     });
 
     // Очищуємо контейнер content і додаємо результати пошуку
@@ -246,8 +291,9 @@ async function searchFavoritesByTags() {
         contentContainer.appendChild(postElement);
     });
 
-    console.log(`Знайдено ${filteredPosts.length} постів за тегом "${searchInput}".`);
+    console.log(`Знайдено ${filteredPosts.length} постів за тегами "${searchInput}".`);
 }
+
 
 // Функція для синхронізації локальних даних з актуальним списком улюблених
 async function syncFavorites(userId) {
@@ -268,16 +314,20 @@ async function syncFavorites(userId) {
         const idsToRemove = existingIds.filter(id => !collectedIds.includes(id));
 
         // Видаляємо елементи, яких немає в новому списку
-        const updatedFavoritesData = favoritesData.filter(item => !idsToRemove.includes(item.id));
+        let updatedFavoritesData = favoritesData.filter(item => !idsToRemove.includes(item.id));
 
         // Знаходимо нові ID, які потрібно додати
         const idsToAdd = collectedIds.filter(id => !existingIds.includes(id));
+        let newEntries = [];
         for (const id of idsToAdd) {
             const details = await fetchDetails(id);
             if (details) {
-                updatedFavoritesData.push(details);
+                newEntries.push(details);
             }
         }
+
+        // Додаємо нові записи перед існуючими
+        updatedFavoritesData = [...newEntries, ...updatedFavoritesData];
 
         // Оновлюємо локальне сховище
         await browser.storage.local.set({ favoritesData: updatedFavoritesData });
@@ -287,3 +337,4 @@ async function syncFavorites(userId) {
         document.getElementById('favoritesCount').innerText = `Favorites: ${updatedFavoritesData.length} posts`;
     });
 }
+
