@@ -41,6 +41,10 @@
     {
       "matches": ["*://rule34.xxx/*"],
       "js": ["utilities/open_in_new_tab.js", "utilities/pixelize.js"]
+    },
+    {
+      "matches": ["*://rule34.xxx/index.php?page=post&s=view*"],
+      "js": ["utilities/resize_img_view.js"]
     }
   ],
   "options_page": "options.html"
