@@ -95,6 +95,8 @@ export function createModal(isFavorite = false) {
     openLinkButton.title = 'Open post in new tab';
     openLinkButton.onclick = function () {
         let currentPost = PostList[currentIndex];
+        console.table(PostList[0]);
+        console.log(`https://rule34.xxx/index.php?page=post&s=view&id=${currentPost.id}`);
         window.open(`https://rule34.xxx/index.php?page=post&s=view&id=${currentPost.id}`, '_blank');
     };
     contentWrapper.appendChild(openLinkButton);

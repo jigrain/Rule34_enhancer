@@ -8,7 +8,7 @@ document.head.appendChild(link);
 
 browser.storage.local.get('favoritesData').then(result => {
     if (!result.favoritesData) {
-        browser.storage.local.set({ favoritesData: [] }).then(() => {
+        browser.storage.local.set({favoritesData: []}).then(() => {
             console.log('favoritesData успішно ініціалізовано як порожній масив.');
         }).catch(err => {
             console.error('Помилка при ініціалізації favoritesData:', err);
@@ -72,18 +72,18 @@ document.head.appendChild(style);
 
 // Функція для перевірки та відображення кількості збережених favoritesData
 async function displayFavoritesCount() {
-    const { favoritesData } = await browser.storage.local.get('favoritesData');
+    const {favoritesData} = await browser.storage.local.get('favoritesData');
     const count = favoritesData ? favoritesData.length : 0;
-    
+
     const favoritesCount = document.createElement('div');
     favoritesCount.id = 'favoritesCount';
     favoritesCount.innerText = `Favorites: ${count} posts`;
-    
+
     return favoritesCount;
 }
 
 // Додаємо елементи на сторінку
-browser.runtime.sendMessage({ action: 'getUserId' }, async (response) => {
+browser.runtime.sendMessage({action: 'getUserId'}, async (response) => {
     const userId = response.userId;
 
     if (userId) {
@@ -142,13 +142,18 @@ browser.runtime.sendMessage({ action: 'getUserId' }, async (response) => {
 // Оптимізована функція Open_Favorites_Gallery
 async function Open_Favorites_Gallery(userId) {
     // Перевіряємо, чи вже є збережені дані в favoritesData
-    const { favoritesData } = await browser.storage.local.get('favoritesData');
-    
+    const {favoritesData} = await browser.storage.local.get('favoritesData');
+
     if (favoritesData && favoritesData.length > 0) {
         console.log('favoritesData вже існує в локальному сховищі. Завантаження з локального сховища.');
 
         // Заповнюємо PostList збереженими даними
-        PostList = favoritesData.map(item => ({ fileUrl: item.file_url }));
+        PostList = favoritesData.map(item => ({
+            id: item.id,
+            fileUrl: item.file_url,
+            previewUrl: item.preview_url,
+            tags: item.tags
+        }));
         console.log('PostList сформовано з локального сховища:', PostList);
 
         // Імпортуємо і викликаємо методи з gallery_mod.js
@@ -180,11 +185,16 @@ async function Open_Favorites_Gallery(userId) {
             }
 
             // Зберігаємо зібрані дані в локальному сховищі
-            await browser.storage.local.set({ favoritesData: detailedInfo });
+            await browser.storage.local.set({favoritesData: detailedInfo});
             console.log('Детальна інформація збережена в локальному сховищі:', detailedInfo);
 
             // Заповнюємо PostList зібраними file_url
-            PostList = detailedInfo.map(item => ({ fileUrl: item.file_url }));
+            PostList = favoritesData.map(item => ({
+                id: item.id,
+                fileUrl: item.file_url,
+                previewUrl: item.preview_url,
+                tags: item.tags
+            }));
             console.log('PostList сформовано з file_url:', PostList);
 
             // Імпортуємо і викликаємо методи з gallery_mod.js
@@ -224,9 +234,9 @@ async function fetchDetails(id) {
 
         // Перевіряємо, чи дані валідні і чи є потрібні поля
         if (data && data.length > 0) {
-            const { file_url, preview_url, tags } = data[0];
-            console.log(`Отримані дані для ID ${id}:`, { file_url, preview_url, tags });
-            return { id, file_url, preview_url, tags };
+            const {file_url, preview_url, tags} = data[0];
+            console.log(`Отримані дані для ID ${id}:`, {file_url, preview_url, tags});
+            return {id, file_url, preview_url, tags};
         } else {
             console.warn(`Дані не знайдені або JSON некоректний для ID ${id}`);
             return null;
@@ -240,9 +250,9 @@ async function fetchDetails(id) {
 // Функція для пошуку постів за тегами з підтримкою виключаючих тегів
 async function searchFavoritesByTags() {
     const searchInput = document.getElementById('search_input').value.trim().toLowerCase();
-    
+
     // Завантажуємо favoritesData з локального сховища
-    const { favoritesData } = await browser.storage.local.get('favoritesData');
+    const {favoritesData} = await browser.storage.local.get('favoritesData');
     if (!favoritesData || favoritesData.length === 0) {
         console.log('Favorites data is empty or not found.');
         return;
@@ -250,7 +260,7 @@ async function searchFavoritesByTags() {
 
     // Розділяємо введений рядок на окремі теги
     const tags = searchInput.split(/\s+/);
-    
+
     // Розділяємо на обов’язкові та виключаючі теги
     const requiredTags = tags.filter(tag => !tag.startsWith('-'));
     const excludedTags = tags.filter(tag => tag.startsWith('-')).map(tag => tag.substring(1));
@@ -261,10 +271,10 @@ async function searchFavoritesByTags() {
 
         // Перевірка наявності всіх обов’язкових тегів
         const hasRequiredTags = requiredTags.every(tag => postTags.includes(tag));
-        
+
         // Перевірка відсутності виключаючих тегів
         const hasNoExcludedTags = excludedTags.every(tag => !postTags.includes(tag));
-        
+
         // Повертаємо true, якщо пост відповідає всім умовам
         return hasRequiredTags && hasNoExcludedTags;
     });
@@ -307,7 +317,7 @@ async function syncFavorites(userId) {
         console.log('Отримані зібрані ID з background:', collectedIds);
 
         // Завантажуємо favoritesData з локального сховища
-        const { favoritesData } = await browser.storage.local.get('favoritesData') || [];
+        const {favoritesData} = await browser.storage.local.get('favoritesData') || [];
         const existingIds = favoritesData.map(item => item.id);
 
         // Знаходимо ID, які необхідно видалити
@@ -330,7 +340,7 @@ async function syncFavorites(userId) {
         updatedFavoritesData = [...newEntries, ...updatedFavoritesData];
 
         // Оновлюємо локальне сховище
-        await browser.storage.local.set({ favoritesData: updatedFavoritesData });
+        await browser.storage.local.set({favoritesData: updatedFavoritesData});
         console.log('Синхронізація завершена. Оновлені дані збережено в локальному сховищі.');
 
         // Оновлюємо кількість в favoritesCount
