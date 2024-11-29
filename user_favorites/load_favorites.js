@@ -22,6 +22,7 @@ const style = document.createElement('style');
 style.innerHTML = `
 #controlContainer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: start;
     align-items: center;
     gap: 10px; /* Відстань між елементами */
@@ -142,7 +143,24 @@ browser.runtime.sendMessage({action: 'getUserId'}, async (response) => {
 // Оптимізована функція Open_Favorites_Gallery
 async function Open_Favorites_Gallery(userId) {
     // Перевіряємо, чи вже є збережені дані в favoritesData
-    const {favoritesData} = await browser.storage.local.get('favoritesData');
+    const { favoritesData } = await browser.storage.local.get('favoritesData');
+    // Контейнер для смуги завантаження
+    const controlContainer = document.getElementById('controlContainer');
+
+    // Імпорт модуля динамічно
+    let ProgressBar;
+    try {
+        const module = await import(chrome.runtime.getURL('user_favorites/progress_bar.js'));
+        ProgressBar = module.ProgressBar;
+    } catch (err) {
+        console.error("Error loading progress_bar.js:", err);
+        return;
+    }
+
+    // Ініціалізуємо смугу прогресу
+    const progressBar = new ProgressBar(controlContainer);
+    progressBar.create();
+    progressBar.show();
 
     if (favoritesData && favoritesData.length > 0) {
         console.log('favoritesData вже існує в локальному сховищі. Завантаження з локального сховища.');
@@ -157,7 +175,7 @@ async function Open_Favorites_Gallery(userId) {
         console.log('PostList сформовано з локального сховища:', PostList);
 
         // Імпортуємо і викликаємо методи з gallery_mod.js
-        import(chrome.runtime.getURL('gallery_mod.js')).then((module) => {
+        import(chrome.runtime.getURL('utilities/gallery_ui/gallery_mod.js')).then((module) => {
             module.createModal(true);
             module.showModal(0);
         }).catch(err => {
@@ -165,6 +183,10 @@ async function Open_Favorites_Gallery(userId) {
         });
     } else {
         console.log('favoritesData не знайдено, початок нового запиту.');
+
+        // Початковий прогрес
+        progressBar.update(0, 'Завантаження ID...');
+
 
         // Якщо локальні дані відсутні, робимо запит і зберігаємо їх
         browser.runtime.sendMessage({
@@ -176,17 +198,24 @@ async function Open_Favorites_Gallery(userId) {
             console.log('Отримані зібрані ID з background:', collectedIds);
 
             let detailedInfo = [];
+            progressBar.startTimer(collectedIds.length);
 
-            for (const id of collectedIds) {
-                const details = await fetchDetails(id);
+            for (let i = 0; i < collectedIds.length; i++) {
+                const details = await fetchDetails(collectedIds[i]);
                 if (details) {
                     detailedInfo.push(details);
                 }
+
+
+                const progress = ((i + 1) / collectedIds.length) * 100;
+                progressBar.update(progress, `Оброблено ${i} елементів, (${progress.toFixed(2)}%)`);
             }
 
             // Зберігаємо зібрані дані в локальному сховищі
             await browser.storage.local.set({favoritesData: detailedInfo});
             console.log('Детальна інформація збережена в локальному сховищі:', detailedInfo);
+
+            progressBar.hide();
 
             // Заповнюємо PostList зібраними file_url
             PostList = favoritesData.map(item => ({
@@ -198,7 +227,7 @@ async function Open_Favorites_Gallery(userId) {
             console.log('PostList сформовано з file_url:', PostList);
 
             // Імпортуємо і викликаємо методи з gallery_mod.js
-            import(chrome.runtime.getURL('gallery_mod.js')).then((module) => {
+            import(chrome.runtime.getURL('utilities/gallery_ui/gallery_mod.js')).then((module) => {
                 module.createModal();
                 module.showModal(0);
             }).catch(err => {
@@ -206,6 +235,7 @@ async function Open_Favorites_Gallery(userId) {
             });
 
             document.getElementById('favoritesCount').innerText = `Favorites: ${detailedInfo.length} posts`;
+
         });
     }
 }
@@ -252,7 +282,7 @@ async function searchFavoritesByTags() {
     const searchInput = document.getElementById('search_input').value.trim().toLowerCase();
 
     // Завантажуємо favoritesData з локального сховища
-    const {favoritesData} = await browser.storage.local.get('favoritesData');
+    const { favoritesData } = await browser.storage.local.get('favoritesData');
     if (!favoritesData || favoritesData.length === 0) {
         console.log('Favorites data is empty or not found.');
         return;
@@ -267,13 +297,19 @@ async function searchFavoritesByTags() {
 
     // Фільтруємо пости на основі тегів
     const filteredPosts = favoritesData.filter(post => {
-        const postTags = post.tags.toLowerCase();
+        const postTags = ` ${post.tags.toLowerCase()} `; // Додаємо пробіли на початку і в кінці для точного збігу
 
-        // Перевірка наявності всіх обов’язкових тегів
-        const hasRequiredTags = requiredTags.every(tag => postTags.includes(tag));
+        // Створюємо регулярні вирази для обов’язкових тегів
+        const hasRequiredTags = requiredTags.every(tag => {
+            const regex = new RegExp(`\\b${tag}\\b`, 'i'); // Шукаємо повний збіг слова
+            return regex.test(postTags);
+        });
 
-        // Перевірка відсутності виключаючих тегів
-        const hasNoExcludedTags = excludedTags.every(tag => !postTags.includes(tag));
+        // Створюємо регулярні вирази для виключаючих тегів
+        const hasNoExcludedTags = excludedTags.every(tag => {
+            const regex = new RegExp(`\\b${tag}\\b`, 'i'); // Шукаємо повний збіг слова
+            return !regex.test(postTags);
+        });
 
         // Повертаємо true, якщо пост відповідає всім умовам
         return hasRequiredTags && hasNoExcludedTags;
@@ -283,8 +319,18 @@ async function searchFavoritesByTags() {
     const contentContainer = document.getElementById('content');
     contentContainer.innerHTML = ''; // Очищення контейнера
 
+    const Img_List_Element = document.createElement('div');
+    Img_List_Element.className = 'image-list';
+    Img_List_Element.style = "gap: 25px 10px";
+    contentContainer.appendChild(Img_List_Element);
+
     // Додаємо елементи для кожного знайденого поста
     filteredPosts.forEach(post => {
+        // Створюємо зовнішній span
+        const wrapperElement = document.createElement('span');
+        wrapperElement.style = "align-self: flex-start; display: grid; grid-template-rows: auto 10px;";
+
+        // Внутрішній span з класом thumb
         const postElement = document.createElement('span');
         postElement.className = 'thumb';
 
@@ -298,12 +344,15 @@ async function searchFavoritesByTags() {
             </a>
         `;
 
-        contentContainer.appendChild(postElement);
+        // Вкладаємо внутрішній span у зовнішній
+        wrapperElement.appendChild(postElement);
+
+        // Додаємо зовнішній span у контейнер
+        Img_List_Element.appendChild(wrapperElement);
     });
 
     console.log(`Знайдено ${filteredPosts.length} постів за тегами "${searchInput}".`);
 }
-
 
 // Функція для синхронізації локальних даних з актуальним списком улюблених
 async function syncFavorites(userId) {

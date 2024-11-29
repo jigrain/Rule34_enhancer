@@ -40,7 +40,7 @@ async function processTags() {
         await logMovies(tags);
 
         // Динамічний імпорт через import()
-        import(chrome.runtime.getURL('gallery_mod.js')).then((module) => {
+        import(chrome.runtime.getURL('utilities/gallery_ui/gallery_mod.js')).then((module) => {
             module.createModal();  // Викликаємо створення модального вікна
             module.showModal(0);    // Відкриваємо модальне вікно з першим елементом
         }).catch(err => {

@@ -9,8 +9,9 @@
   },
   
   "web_accessible_resources": [
-    "galleryStyles.css",
-    "gallery_mod.js"
+    "utilities/gallery_ui/galleryStyles.css",
+    "utilities/gallery_ui/gallery_mod.js",
+    "user_favorites/progress_bar.js"
   ],
   
   "permissions": [
@@ -24,23 +25,23 @@
     "contextMenus"
   ],
    "background": {
-    "scripts": ["load_favorites_background.js", "get_user_id.js", "utilities/pixelize_background.js"]
+    "scripts": ["user_favorites/load_favorites_background.js", "user_favorites/get_user_id.js", "utilities/pixelize_background.js"]
 	},
 
   "content_scripts": [
     {
       "matches": ["*://rule34.xxx/index.php?page=post&s=list*"],
-	    "css": ["galleryStyles.css"],
+	    "css": ["utilities/gallery_ui/galleryStyles.css"],
       "js": ["main_search_img.js"]
     },
 	{
       "matches": ["*://rule34.xxx/*"],
-      "css": ["galleryStyles.css"],
-      "js": ["load_favorites.js"]
+      "css": ["utilities/gallery_ui/galleryStyles.css"],
+      "js": ["user_favorites/load_favorites.js"]
     },
     {
       "matches": ["*://rule34.xxx/*"],
-      "js": ["utilities/open_in_new_tab.js", "utilities/pixelize.js"]
+      "js": ["utilities/pixelize.js", "utilities/image_block.js"]
     },
     {
       "matches": ["*://rule34.xxx/index.php?page=post&s=view*"],
