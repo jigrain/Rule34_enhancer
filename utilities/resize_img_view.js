@@ -1,29 +1,60 @@
 const image = document.getElementById("image");
+const content = document.getElementById("content");
+const right_col = document.getElementById("right-col");
+const sidebar = document.querySelector(".sidebar");
+const sidebar_right = document.querySelector(".sidebarRight");
+
 
 if (image) {
   const resizeImage = () => {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
+    if (sidebar_right) {
+      sidebar_right.remove();
+    }
+    // Ширина sidebar
+    const sidebarWidth = sidebar.offsetWidth;
+
+    const style = getComputedStyle(right_col);
+    const right_colMarginLeft = parseInt(style.marginLeft, 10)
+    const right_colMarginFight = parseInt(style.marginRight, 10)
+
+    const sidebar_style = getComputedStyle(sidebar);
+
+    const sidebarMarginLeft = parseInt(sidebar_style.marginLeft, 10)
+    const sidebarMarginFight = parseInt(sidebar_style.marginRight, 10)
+
+    const content_style = getComputedStyle(content);
+
+    const contentPaddingLeft = (parseInt(content_style.paddingLeft, 10) / 2)
+
+    // Доступна ширина для зображення
+    const availableWidth = (windowWidth - sidebarWidth) - right_colMarginLeft - right_colMarginFight - sidebarMarginLeft - sidebarMarginFight - contentPaddingLeft;
+
     // Співвідношення сторін зображення
     const imageRatio = image.naturalWidth / image.naturalHeight;
 
-    // Співвідношення сторін вікна
-    const windowRatio = windowWidth / windowHeight;
+    // Співвідношення сторін доступної області
+    const availableRatio = availableWidth / windowHeight;
 
-    if (imageRatio > windowRatio) {
-      // Якщо зображення ширше, ніж вікно
-      image.style.width = `${windowWidth}px`;
-      image.style.height = `${windowWidth / imageRatio}px`;
+    if (imageRatio > availableRatio) {
+      // Якщо зображення ширше, ніж доступна область
+      image.style.width = `${availableWidth}px`;
+      image.style.height = `${availableWidth / imageRatio}px`;
     } else {
-      // Якщо зображення вище, ніж вікно
+      // Якщо зображення вище, ніж доступна область
       image.style.height = `${windowHeight}px`;
       image.style.width = `${windowHeight * imageRatio}px`;
     }
   };
 
-  // Виклик функції при завантаженні сторінки та зміні розмірів вікна
   resizeImage();
+    
+  // Виклик функції при завантаженні зображення
+  image.addEventListener("load", resizeImage);
+
+  // Виклик функції при зміні розмірів вікна
   window.addEventListener("resize", resizeImage);
 
   // Створюємо елементи модального вікна

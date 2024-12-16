@@ -8,82 +8,12 @@
     }
 })();
 
-if (!document.querySelector("style[data-enhance-thumbnails]")) {
-    const styleElement = document.createElement("style");
-    styleElement.setAttribute("data-enhance-thumbnails", "true"); // Додаємо унікальний атрибут, щоб уникнути конфліктів
-    styleElement.textContent = `
-        .thumb {
-            position: relative;
-            display: inline-block;
-            transition: transform 0.3s ease;
-            overflow: hidden;
-        }
-
-        .thumb:hover {
-            transform: scale(1.1);
-            z-index: 10;
-        }
-
-        .thumb img {
-            object-fit: cover; /* Масштабуємо без викривлень */
-        }
-
-        .action-btn {
-            position: absolute;
-            top: 10px;
-            background-color: rgba(0, 0, 0, 0.6);
-            border: none;
-            color: white;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 10%;
-            font-size: 18px;
-            opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .thumb:hover .action-btn {
-            opacity: 1;
-        }
-
-        .heart-btn {
-            left: 10px;
-        }
-
-        .zoom-btn {
-            right: 10px;
-        }
-
-        .popup-image {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            max-width: 90%;
-            max-height: 90%;
-            border: 3px solid white;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
-            display: none;
-        }
-        
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-    `;
-    document.head.appendChild(styleElement);
+if (!document.querySelector('link[data-enhance-thumbnails]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = chrome.runtime.getURL('thumbnails.css'); // Замініть на фактичний шлях
+    link.setAttribute('data-enhance-thumbnails', 'true');
+    document.head.appendChild(link);
 }
 
 document.body.insertAdjacentHTML(
@@ -160,6 +90,18 @@ function injectScript(fn, ...args) {
 
 // Функція для додавання кнопок
 function enhanceThumbnails() {
+    document.querySelectorAll('a').forEach(a => {
+        if (a.innerHTML.includes('<b>Remove</b>')) {
+            console.log('Видаляємо елемент:', a); // Для перевірки
+            a.remove(); // Видаляємо елемент з DOM
+        }
+    });
+
+    const contentDiv = document.getElementById('content');
+    if (contentDiv) {
+        contentDiv.setAttribute('style', 'padding: 20px 15px 0 15px');
+    }
+
     document.querySelectorAll(".thumb").forEach((thumb, index) => {
         const hoverContainer = document.getElementById("img_hover_container");
         const anchor = thumb.querySelector("a");
@@ -175,7 +117,6 @@ function enhanceThumbnails() {
 
         anchor.setAttribute("target", "_blank");
 
-        // Витягуємо postId з кінця URL
         const postIdMatch = anchor.href.match(/id=(\d+)/);
         const postId = postIdMatch ? postIdMatch[1] : null;
 
@@ -191,6 +132,19 @@ function enhanceThumbnails() {
             heartBtn.id = heartBtnId;
             heartBtn.innerHTML = '<i class="fa fa-heart"></i>';
             thumb.appendChild(heartBtn);
+        } else {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "action-btn heart-btn";
+            deleteBtn.id = "deleteBtnId";
+            deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+            thumb.appendChild(deleteBtn);
+
+            deleteBtn.addEventListener('click', () => {
+                const url = `index.php?page=favorites&s=delete&id=${postId}&return_pid=0`;
+
+                document.location.href = url;
+                return false;
+            })
         }
 
         // Використовуємо injectScript для прив'язки обробника до кнопки

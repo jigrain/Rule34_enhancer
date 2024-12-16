@@ -1,12 +1,17 @@
 let currentUrl = window.location.href;
 let PostList = [];
 let currentIndex = 0;
+let link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
+document.head.appendChild(link);
 
 
 async function logMovies(tags) {
     const limit = 966;
     let page = 0;
     let hasMoreResults = true;
+    const maxPosts = 15000;
 
     while (hasMoreResults) {
         const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${tags}&pid=${page}&limit=${limit}`);
@@ -24,6 +29,11 @@ async function logMovies(tags) {
                 PostList.push({ fileUrl, id });
             });
             page += 1;
+
+            if (PostList.length >= maxPosts) {
+                console.log(`Reached maximum allowed posts: ${maxPosts}. Stopping further fetches.`);
+                hasMoreResults = false;
+            }
         }
 
         console.log(`Processed page ${page}, collected ${PostList.length} media files.`);
@@ -57,16 +67,70 @@ if (currentUrl.includes("page=post") && currentUrl.includes("s=list")) {
     if (sidebar) {
         let tagSearchContainer = sidebar.querySelector('.tag-search');
         if (tagSearchContainer) {
-            let existingButtons = tagSearchContainer.parentElement.querySelectorAll('button');
-            let buttonExists = Array.from(existingButtons).some(button => button.innerText === 'Gallery mod');
 
-            if (!buttonExists) {
-                let div = document.createElement('div');
-                let button = document.createElement('button');
-                button.innerText = 'Gallery mod';
-                button.onclick = processTags;
-                div.appendChild(button);
-                tagSearchContainer.insertAdjacentElement('afterend', div);
+            let existingPanels = tagSearchContainer.parentElement.querySelectorAll('.panel');
+            if (existingPanels.length === 0) {
+                // Використовуємо створення фіксованої панелі з 1 вертикальною кнопкою і 4 горизонтальними
+                const panel = document.createElement('div');
+                panel.className = 'panel';
+
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'button-container';
+
+                // Створення вертикальних кнопок
+                const verticalButtons = document.createElement('div');
+                verticalButtons.className = 'vertical-buttons';
+
+                const galleryModButton = document.createElement('button');
+                galleryModButton.className = 'button vertical-button';
+                galleryModButton.textContent = 'Gallery mod';
+                galleryModButton.onclick = processTags; // Ваша функція
+                verticalButtons.appendChild(galleryModButton);
+
+                // Додаємо вертикальні кнопки до контейнера
+                buttonContainer.appendChild(verticalButtons);
+
+                // Додаємо роздільник
+                const divider = document.createElement('div');
+                divider.className = 'divider';
+                buttonContainer.appendChild(divider);
+
+                // Створення горизонтальних кнопок
+                const horizontalButtons = document.createElement('div');
+                horizontalButtons.className = 'horizontal-buttons';
+
+                const button = document.createElement('button');
+                button.id = "open-search-history"
+                button.className = 'button horizontal-button';
+                button.innerHTML = '<i class="fa fa-history"></i>'
+                horizontalButtons.appendChild(button);
+
+                const button2 = document.createElement('button');
+                button2.id = "open-saved-search"
+                button2.className = 'button horizontal-button';
+                button2.innerHTML = '<i class="fa fa-copy"></i>';
+                horizontalButtons.appendChild(button2);
+
+                const button3 = document.createElement('button');
+                button3.id = "open-user-albums"
+                button3.className = 'button horizontal-button';
+                button3.innerHTML = '<i class="fa fa-photo-film"></i>';
+                horizontalButtons.appendChild(button3);
+
+                const button4 = document.createElement('button');
+                button4.id = "open-favourite-authors"
+                button4.className = 'button horizontal-button';
+                button4.innerHTML = '<i class="fa fa-address-book"></i>';
+                horizontalButtons.appendChild(button4);
+
+                // Додаємо горизонтальні кнопки до контейнера
+                buttonContainer.appendChild(horizontalButtons);
+
+                // Додаємо контейнер до панелі
+                panel.appendChild(buttonContainer);
+
+                // Вставляємо панель після tagSearchContainer
+                tagSearchContainer.insertAdjacentElement('afterend', panel);
             }
         } else {
             console.log("Element with class='tag-search' not found in sidebar.");

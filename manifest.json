@@ -11,7 +11,10 @@
   "web_accessible_resources": [
     "utilities/gallery_ui/galleryStyles.css",
     "utilities/gallery_ui/gallery_mod.js",
-    "user_favorites/progress_bar.js"
+    "user_favorites/progress_bar.js",
+    "utilities/image_block.css",
+    "main_search_panel.css",
+    "utilities/user_controll_panel/init_controll_panel.js"
   ],
   
   "permissions": [
@@ -22,26 +25,29 @@
 	  "tabs",
 	  "https://wimg.rule34.xxx/*",
 	  "https://rule34.xxx/*",
-    "contextMenus"
+    "contextMenus",
+    "history"
   ],
    "background": {
-    "scripts": ["user_favorites/load_favorites_background.js", "user_favorites/get_user_id.js", "utilities/pixelize_background.js"]
+    "scripts": ["user_favorites/user_favorites_background.js", "user_favorites/get_user_id.js", "utilities/pixelize_background.js", 
+    "utilities/user_controll_panel/background_search-history.js"]
 	},
 
   "content_scripts": [
     {
       "matches": ["*://rule34.xxx/index.php?page=post&s=list*"],
-	    "css": ["utilities/gallery_ui/galleryStyles.css"],
-      "js": ["main_search_img.js"]
+	    "css": ["utilities/gallery_ui/galleryStyles.css", "main_search_panel.css"],
+      "js": ["main_search_img.js", "utilities/user_controll_panel/init_search-history.js", "utilities/user_controll_panel/init_saved-search.js"]
     },
 	{
       "matches": ["*://rule34.xxx/*"],
       "css": ["utilities/gallery_ui/galleryStyles.css"],
-      "js": ["user_favorites/load_favorites.js"]
+      "js": ["user_favorites/user_favorites.js"]
     },
     {
       "matches": ["*://rule34.xxx/*"],
-      "js": ["utilities/pixelize.js", "utilities/image_block.js"]
+      "css": ["utilities/image_block.css"],
+      "js": ["utilities/pixelize.js", "utilities/image_block.js", "utilities/main_search_content.js"]
     },
     {
       "matches": ["*://rule34.xxx/index.php?page=post&s=view*"],

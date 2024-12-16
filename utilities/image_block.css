@@ -1,0 +1,70 @@
+.thumb {
+    position: relative;
+    display: inline-block;
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.thumb:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+.thumb img {
+    object-fit: cover;
+}
+
+.action-btn {
+    position: absolute;
+    top: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: white;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 10%;
+    font-size: 18px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thumb:hover .action-btn {
+    opacity: 1;
+}
+
+.heart-btn {
+    left: 10px;
+}
+
+.zoom-btn {
+    right: 10px;
+}
+
+.popup-image {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    max-width: 90%;
+    max-height: 90%;
+    border: 3px solid white;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    display: none;
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}

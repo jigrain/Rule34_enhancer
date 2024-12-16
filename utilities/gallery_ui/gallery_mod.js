@@ -27,23 +27,72 @@ function injectScript(fn, postId) {
 function updateMedia() {
     let imgElement = document.querySelector('#gallery_img');
     let videoElement = document.querySelector('#gallery_video');
-    
+    let imgWrapper = document.getElementById("mediaWrapper");
+    let contentWrapper = document.getElementById("contentWrapper");
+
     let currentPost = PostList[currentIndex];
 
     if (currentPost.fileUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
         imgElement.src = currentPost.fileUrl;
+
+        // Додаємо подію onload для зображення
+        imgElement.onload = function () {
+            // Отримуємо розміри imgWrapper після завантаження зображення
+            const imgDimensions = imgWrapper.getBoundingClientRect();
+            const aspectRatio = imgElement.naturalHeight / imgElement.naturalWidth;
+
+            if (aspectRatio > 5) {
+                console.log('tall-image');
+                imgElement.classList.add('tall-image'); // Якщо висота > ширини у 5 разів
+                imgWrapper.classList.add('mediaWrapper-tall');
+
+                const imgDimensions = imgWrapper.getBoundingClientRect();
+
+                // Оновлюємо розміри contentWrapper під tall-image
+                contentWrapper.style.width = `${imgDimensions.width}px`;
+                contentWrapper.style.height = `90vh`; // Фіксована висота для високих зображень
+
+                console.log("Велике зображення Ширина:", imgDimensions.width);
+                console.log("Велике зображення Висота:", imgDimensions.height);
+            } else {
+                imgElement.classList.remove('tall-image');
+                imgWrapper.classList.remove('mediaWrapper-tall');
+
+                // Повертаємо стандартні розміри contentWrapper
+                const imgDimensions = imgWrapper.getBoundingClientRect();
+                contentWrapper.style.width = `${imgDimensions.width}px`;
+                contentWrapper.style.height = `${imgDimensions.height}px`;
+
+                console.log("Звичайне зображення Ширина:", imgDimensions.width);
+                console.log("Звичайне зображення Висота:", imgDimensions.height);
+            }
+        };
+
         imgElement.style.display = 'block';
         videoElement.style.display = 'none';
     } else if (currentPost.fileUrl.match(/\.(mp4|webm)$/) != null) {
         videoElement.src = currentPost.fileUrl;
         videoElement.style.display = 'block';
         imgElement.style.display = 'none';
+
+        // Wait for the video metadata to load before setting dimensions
+        videoElement.onloadedmetadata = function () {
+            // Дочекаємося, поки браузер відобразить масштабоване відео
+            requestAnimationFrame(() => {
+                const videoDimensions = videoElement.getBoundingClientRect();
+                contentWrapper.style.width = `${videoDimensions.width}px`;
+                contentWrapper.style.height = `${videoDimensions.height}px`;
+
+                console.log("Video Displayed Width:", videoDimensions.width);
+                console.log("Video Displayed Height:", videoDimensions.height);
+            });
+        };
     } else {
         console.log("Unsupported media format.");
     }
 
     if (!isFavorite) {
-        injectScript(function(postId) {
+        injectScript(function (postId) {
             let heartIcon = document.querySelector('#heart_icon');
             if (heartIcon) {
                 heartIcon.onclick = function () {
@@ -62,6 +111,11 @@ export function createModal(isFavorite = false) {
 
     let contentWrapper = document.createElement('div');
     contentWrapper.className = 'contentWrapper';
+    contentWrapper.id = 'contentWrapper';
+
+    let mediaWrapper = document.createElement('div');
+    mediaWrapper.className = 'mediaWrapper';
+    mediaWrapper.id = 'mediaWrapper';
 
     let closeButton = document.createElement('span');
     closeButton.className = 'closeButton toggleable';
@@ -70,7 +124,16 @@ export function createModal(isFavorite = false) {
         modal.style.display = 'none';
     };
 
-    if(!isFavorite){
+    document.addEventListener('keydown', function (event) {
+        if (event.key === ' ') {
+            let modal = document.querySelector('#mediaModal');
+            if (modal && modal.style.display === 'flex') {
+                event.preventDefault(); // Забороняємо стандартну поведінку прокрутки
+            }
+        }
+    });
+
+    if (!isFavorite) {
         let heartIcon = document.createElement('i');
         heartIcon.className = 'fa fa-heart toggleable';
         heartIcon.id = 'heart_icon';
@@ -84,7 +147,7 @@ export function createModal(isFavorite = false) {
     toggleButton.title = 'Toggle controls visibility';
     toggleButton.onclick = function () {
         let controls = document.querySelectorAll('.toggleable');
-            controls.forEach(control => control.classList.toggle('hidden-controls'));
+        controls.forEach(control => control.classList.toggle('hidden-controls'));
     };
     contentWrapper.appendChild(toggleButton);
 
@@ -122,7 +185,7 @@ export function createModal(isFavorite = false) {
     let paginator = document.createElement('div');
     paginator.id = 'paginator';
     paginator.className = 'paginator toggleable';
-    
+
     let firstButton = document.createElement('button');
     firstButton.className = 'navButton firstButton toggleable';
     firstButton.innerHTML = '<i class="fa fa-fast-backward"></i>';
@@ -131,11 +194,11 @@ export function createModal(isFavorite = false) {
         updateMedia();
         updatePaginator();
     };
-    
+
     let paginatorText = document.createElement('span');
     paginatorText.id = 'paginatorText';
     paginatorText.innerText = `${currentIndex + 1} / ${PostList.length}`;
-    
+
     let lastButton = document.createElement('button');
     lastButton.className = 'navButton lastButton toggleable';
     lastButton.innerHTML = '<i class="fa fa-fast-forward"></i>';
@@ -144,21 +207,24 @@ export function createModal(isFavorite = false) {
         updateMedia();
         updatePaginator();
     };
-    
+
     // Додаємо лише текст у пагінатор по центру
     paginator.appendChild(paginatorText);
-    
+
     // Додаємо кнопки у contentWrapper, щоб вони були окремо від тексту
     contentWrapper.appendChild(firstButton);
     contentWrapper.appendChild(paginator);
     contentWrapper.appendChild(lastButton);
 
-    contentWrapper.appendChild(imgElement);
-    contentWrapper.appendChild(videoElement);
+    mediaWrapper.appendChild(imgElement);
+    mediaWrapper.appendChild(videoElement);
+
+
     contentWrapper.appendChild(closeButton);
     contentWrapper.appendChild(prevButton);
     contentWrapper.appendChild(nextButton);
     modal.appendChild(contentWrapper);
+    modal.appendChild(mediaWrapper);
     document.body.appendChild(modal);
 
     return modal;

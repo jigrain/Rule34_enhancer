@@ -146,6 +146,7 @@ async function Open_Favorites_Gallery(userId) {
     const { favoritesData } = await browser.storage.local.get('favoritesData');
     // Контейнер для смуги завантаження
     const controlContainer = document.getElementById('controlContainer');
+    const originalHeight = controlContainer.offsetHeight;
 
     // Імпорт модуля динамічно
     let ProgressBar;
@@ -238,6 +239,7 @@ async function Open_Favorites_Gallery(userId) {
 
         });
     }
+    controlContainer.style.height = `${originalHeight}px`; // Відновлюємо висоту
 }
 
 // Функція для отримання даних про кожен id
@@ -356,6 +358,27 @@ async function searchFavoritesByTags() {
 
 // Функція для синхронізації локальних даних з актуальним списком улюблених
 async function syncFavorites(userId) {
+    // Контейнер для смуги завантаження
+    const controlContainer = document.getElementById('controlContainer');
+
+    // Імпорт модуля прогрес-бара динамічно
+    let ProgressBar;
+    try {
+        const module = await import(chrome.runtime.getURL('user_favorites/progress_bar.js'));
+        ProgressBar = module.ProgressBar;
+    } catch (err) {
+        console.error("Error loading progress_bar.js:", err);
+        return;
+    }
+
+    // Ініціалізуємо смугу прогресу
+    const progressBar = new ProgressBar(controlContainer);
+    progressBar.create();
+    progressBar.show();
+
+    // Початковий прогрес
+    progressBar.update(0, 'Завантаження ID...');
+
     // Отримуємо актуальні ID улюблених постів користувача
     browser.runtime.sendMessage({
         action: 'startParsing',
@@ -366,7 +389,7 @@ async function syncFavorites(userId) {
         console.log('Отримані зібрані ID з background:', collectedIds);
 
         // Завантажуємо favoritesData з локального сховища
-        const {favoritesData} = await browser.storage.local.get('favoritesData') || [];
+        const { favoritesData } = await browser.storage.local.get('favoritesData') || [];
         const existingIds = favoritesData.map(item => item.id);
 
         // Знаходимо ID, які необхідно видалити
@@ -378,22 +401,33 @@ async function syncFavorites(userId) {
         // Знаходимо нові ID, які потрібно додати
         const idsToAdd = collectedIds.filter(id => !existingIds.includes(id));
         let newEntries = [];
-        for (const id of idsToAdd) {
+
+        progressBar.startTimer(idsToAdd.length);
+
+        for (const [index, id] of idsToAdd.entries()) {
             const details = await fetchDetails(id);
             if (details) {
                 newEntries.push(details);
             }
+
+            // Оновлюємо смугу прогресу
+            const progress = ((index + 1) / idsToAdd.length) * 100;
+            progressBar.update(progress, `Оброблено ${index + 1} з ${idsToAdd.length} елементів, (${progress.toFixed(2)}%)`);
         }
 
         // Додаємо нові записи перед існуючими
         updatedFavoritesData = [...newEntries, ...updatedFavoritesData];
 
         // Оновлюємо локальне сховище
-        await browser.storage.local.set({favoritesData: updatedFavoritesData});
+        await browser.storage.local.set({ favoritesData: updatedFavoritesData });
         console.log('Синхронізація завершена. Оновлені дані збережено в локальному сховищі.');
 
         // Оновлюємо кількість в favoritesCount
         document.getElementById('favoritesCount').innerText = `Favorites: ${updatedFavoritesData.length} posts`;
+
+        // Ховаємо прогрес-бар після завершення
+        progressBar.hide();
     });
 }
+
 

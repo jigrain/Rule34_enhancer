@@ -1,6 +1,7 @@
 export class ProgressBar {
-    constructor(container) {
+    constructor(container, width = '50%') { // Додано параметр width із значенням за замовчуванням
         this.container = container;
+        this.width = width; // Зберігаємо ширину контейнера
         this.progressWrapper = null;
         this.progressBar = null;
         this.progressText = null;
@@ -16,8 +17,8 @@ export class ProgressBar {
         wrapper.style.position = 'relative';
         wrapper.style.marginTop = '10px';
         wrapper.style.marginBottom = '30px';
-        wrapper.style.width = '100%';
-
+        wrapper.style.width = this.width; // Використовуємо задану ширину
+        
         const progressBar = document.createElement('div');
         progressBar.id = 'progressBar';
         progressBar.style.position = 'absolute';
