@@ -3,34 +3,16 @@ const searchHistoryButton = document.getElementById('open-search-history');
 searchHistoryButton.addEventListener('click', openModal);
 
 // Створюємо модальне вікно
-const modal = document.createElement('dialog');
+let modal = document.createElement('dialog');
 modal.setAttribute('id', 'search-history-modal');
-modal.style.width = '80%';
-modal.style.height = '60%';
-modal.style.padding = '20px';
-modal.style.borderRadius = '10px';
-modal.style.border = 'none';
-modal.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-modal.style.textAlign = 'center';
-modal.style.fontFamily = 'Arial, sans-serif';
-modal.style.overflowY = 'auto';
+modal.classList.add('search-history-modal');
 
 // Додаємо початковий контент модального вікна
 modal.innerHTML = `
-  <button id="close-modal" style="
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    border: none;
-    background: none;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #555;
-  ">×</button>
-  <h2>Search History</h2>
-  <div id="history-content" style="margin-bottom: 20px;"></div>
-  <div id="pagination" style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;"></div>
+  <button id="close-modal" class="close-modal-button">×</button>
+  <h2 class="modal-title">Search History</h2>
+  <div id="history-content" class="history-content"></div>
+  <div id="pagination" class="pagination"></div>
 `;
 
 // Додаємо модальне вікно до сторінки
@@ -43,7 +25,7 @@ function openModal() {
 }
 
 // Додаємо обробник події для закриття модального вікна
-const closeButton = modal.querySelector('#close-modal');
+let closeButton = modal.querySelector('#close-modal');
 closeButton.addEventListener('click', () => {
     modal.close();
 });
@@ -59,46 +41,37 @@ function fetchHistory() {
 
 // Функція для рендерингу історії
 function renderHistory(items, page, maxPerPage) {
-    const historyContent = document.getElementById('history-content');
-    const pagination = document.getElementById('pagination');
+    let historyContent = document.getElementById('history-content');
+    let pagination = document.getElementById('pagination');
     historyContent.innerHTML = ''; // Очищаємо список
     pagination.innerHTML = ''; // Очищаємо пагінацію
 
     // Пагінація
-    const totalPages = Math.ceil(items.length / maxPerPage);
-    const startIndex = (page - 1) * maxPerPage;
-    const currentPageItems = items.slice(startIndex, startIndex + maxPerPage);
+    let totalPages = Math.ceil(items.length / maxPerPage);
+    let startIndex = (page - 1) * maxPerPage;
+    let currentPageItems = items.slice(startIndex, startIndex + maxPerPage);
 
     // Виводимо елементи
     currentPageItems.forEach(item => {
-        const entry = document.createElement('div');
-        entry.style.display = 'flex';
-        entry.style.justifyContent = 'space-between';
-        entry.style.alignItems = 'center';
-        entry.style.marginBottom = '10px';
+        let entry = document.createElement('div');
+        entry.classList.add('history-entry');
 
-        const title = document.createElement('span');
-        title.style.flexGrow = '1';
-        title.style.textAlign = 'left';
+        let title = document.createElement('span');
+        title.classList.add('history-title');
         title.textContent = item.title;
 
-        const date = document.createElement('span');
-        date.style.marginRight = '10px';
-        date.style.color = '#888';
+        let date = document.createElement('span');
+        date.classList.add('history-date');
         date.textContent = formatDate(item.date);
 
-        const copyButton = document.createElement('button');
+        let copyButton = document.createElement('button');
+        copyButton.classList.add('history-copy-button');
         copyButton.textContent = 'Копіювати';
-        copyButton.style.marginLeft = '10px';
-        copyButton.style.padding = '5px';
-        copyButton.style.cursor = 'pointer';
         copyButton.addEventListener('click', () => copyToClipboard(item.title));
 
-        const redirectButton = document.createElement('button');
+        let redirectButton = document.createElement('button');
+        redirectButton.classList.add('history-redirect-button');
         redirectButton.textContent = 'Перейти';
-        redirectButton.style.marginLeft = '10px';
-        redirectButton.style.padding = '5px';
-        redirectButton.style.cursor = 'pointer';
         redirectButton.addEventListener('click', () => redirectTo(item.url));
 
         entry.appendChild(date);
@@ -110,66 +83,66 @@ function renderHistory(items, page, maxPerPage) {
 
     // Функція для форматування дати
     function formatDate(timestamp) {
-        const date = new Date(timestamp);
+        let date = new Date(timestamp);
         return date.toLocaleString(); // Формат дати у локальному вигляді
     }
 
     // Виводимо кнопки пагінації
-    renderPagination(pagination, totalPages, page, items, maxPerPage);
+    renderHistoryPagination(pagination, totalPages, page, items, maxPerPage);
 }
 
 // Функція для сучасного пагінатора
-function renderPagination(container, totalPages, currentPage, items, maxPerPage) {
-    const maxVisiblePages = 3;
+function renderHistoryPagination(container, totalPages, currentPage, items, maxPerPage) {
+    const maxVisiblePages = 5; // Максимальна кількість кнопок, які будуть видимі одночасно
+    container.innerHTML = ''; // Очищення контейнера
 
-    // Кнопка для першої сторінки
+    if (totalPages <= 1) return; // Якщо сторінок менше двох, пагінація не потрібна
+
+    // Додаємо кнопку для переходу на першу сторінку
     if (currentPage > 1) {
-        const firstPageButton = createPageButton('<<', 1, () => renderHistory(items, 1, maxPerPage));
-        container.appendChild(firstPageButton);
+        container.appendChild(createPagePaginatorButton('fas fa-angle-double-left', 1, () => renderHistory(items, 1, maxPerPage), true));
+        container.appendChild(createPagePaginatorButton('fas fa-angle-left', currentPage - 1, () => renderHistory(items, currentPage - 1, maxPerPage), true));
     }
 
-    // Кнопка "Назад"
-    if (currentPage > 1) {
-        const prevButton = createPageButton('<', currentPage - 1, () => renderHistory(items, currentPage - 1, maxPerPage));
-        container.appendChild(prevButton);
-    }
+    // Обчислення діапазону сторінок для відображення
+    const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-    // Відображення діапазону сторінок
-    const startPage = Math.max(1, currentPage - maxVisiblePages);
-    const endPage = Math.min(totalPages, currentPage + maxVisiblePages);
-
+    // Генерація кнопок для діапазону сторінок
     for (let i = startPage; i <= endPage; i++) {
         const pageButton = createPageButton(i, i, () => renderHistory(items, i, maxPerPage));
         if (i === currentPage) {
-            pageButton.style.backgroundColor = '#007BFF';
-            pageButton.style.color = '#fff';
+            pageButton.classList.add('pagination-button-active');
+        }else{
+            pageButton.classList.add('pagination-button');
         }
         container.appendChild(pageButton);
     }
 
-    // Кнопка "Вперед"
+    // Додаємо кнопку для переходу на останню сторінку
     if (currentPage < totalPages) {
-        const nextButton = createPageButton('>', currentPage + 1, () => renderHistory(items, currentPage + 1, maxPerPage));
-        container.appendChild(nextButton);
-    }
-
-    // Кнопка для останньої сторінки
-    if (currentPage < totalPages) {
-        const lastPageButton = createPageButton('>>', totalPages, () => renderHistory(items, totalPages, maxPerPage));
-        container.appendChild(lastPageButton);
+        container.appendChild(createPagePaginatorButton('fa-solid fa-angle-right', currentPage + 1, () => renderHistory(items, currentPage + 1, maxPerPage), true));
+        container.appendChild(createPagePaginatorButton('fa fa-angle-double-right', totalPages, () => renderHistory(items, totalPages, maxPerPage), true));
     }
 }
 
-// Функція для створення кнопки пагінації
-function createPageButton(label, page, onClick) {
-    const button = document.createElement('button');
-    button.textContent = label;
-    button.style.padding = '5px 10px';
-    button.style.margin = '0 5px';
-    button.style.cursor = 'pointer';
-    button.style.backgroundColor = '#f0f0f0';
-    button.style.border = '1px solid #ddd';
+// Оновлена функція createPageButton для підтримки іконок Font Awesome
+function createPagePaginatorButton(label, page, onClick, isScrollButton = false) {
+    let button = document.createElement('button');
+    console.log(isScrollButton);
+    button.classList.add(isScrollButton ? 'pagination-button-scroll' : 'pagination-button');
     button.addEventListener('click', onClick);
+
+    if (isScrollButton) {
+        // Якщо це кнопка прокрутки, додаємо іконку
+        let icon = document.createElement('i');
+        icon.className = label; // label тепер містить клас іконки, наприклад, "fas fa-angle-right"
+        button.appendChild(icon);
+    } else {
+        // Якщо це звичайна кнопка, додаємо текст
+        button.textContent = label; // label — це текст (номер сторінки)
+    }
+
     return button;
 }
 

@@ -5,6 +5,10 @@ document.head.appendChild(link);
 
 let currentIndex = 0;
 let isFavorite = false;
+let currentPage = 0; // Відстежуємо сторінку для дозавантаження
+const batchSize = 100; // Розмір партії (перевірка кожні 100 елементів)
+let lastThreshold = batchSize; // Порогова позначка для дозавантаження
+let isLoadingMore = false;
 
 function createMediaElements() {
     let imgElement = document.createElement('img');
@@ -24,7 +28,32 @@ function injectScript(fn, postId) {
     script.remove();
 }
 
-function updateMedia() {
+async function loadMoreImages(tags) {
+    console.log(`Attempting to load more images from page ${currentPage}...`);
+    const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${tags}&pid=${currentPage}&limit=${100}`);
+    const text = await response.text();
+    let parser = new DOMParser();
+    let xmlDoc = parser.parseFromString(text, "text/xml");
+
+    let posts = xmlDoc.querySelectorAll('post');
+    if (posts.length === 0) {
+        console.log("No more images available.");
+        return false; // Якщо більше немає зображень
+    }
+
+    posts.forEach(post => {
+        let fileUrl = post.getAttribute('file_url');
+        let id = post.getAttribute('id');
+        PostList.push({ fileUrl, id }); // Додаємо до списку
+    });
+
+    currentPage += 1; // Збільшуємо номер сторінки
+    console.log(`Loaded ${posts.length} images. Total: ${PostList.length}`);
+    return posts.length === limit; // Повертаємо `true`, якщо є ще зображення
+}
+
+
+function updateMedia(isFavorite = false) {
     let imgElement = document.querySelector('#gallery_img');
     let videoElement = document.querySelector('#gallery_video');
     let imgWrapper = document.getElementById("mediaWrapper");
@@ -102,10 +131,28 @@ function updateMedia() {
         }, currentPost.id);
     }
 
+
+    if (currentIndex + 1 >= lastThreshold && isFavorite==false) {
+        console.log(`Reached threshold ${lastThreshold}. Loading more images...`);
+        let tags = document.querySelector('input[name="tags"]').value.replace(/ /g, "+");
+        if (!isLoadingMore) {
+            isLoadingMore = true; // Уникнення повторного виклику
+            loadMoreImages(tags).then(hasMore => {
+                if (hasMore) {
+                    lastThreshold += batchSize; // Оновлюємо порогову позначку
+                } else {
+                    console.log("No more images available to load.");
+                }
+                isLoadingMore = false; // Скидаємо прапорець після завершення завантаження
+            });
+        }
+    }
+
     updatePaginator();
 }
 
-export function createModal(isFavorite = false) {
+export function createModal(isFavorite = false, lastPage = 0) {
+    currentPage = lastPage;
     let modal = document.createElement('div');
     modal.id = 'mediaModal';
 
@@ -171,7 +218,7 @@ export function createModal(isFavorite = false) {
     prevButton.innerHTML = '<i class="fa fa-arrow-circle-o-left"></i>';
     prevButton.onclick = function () {
         currentIndex = (currentIndex > 0) ? currentIndex - 1 : PostList.length - 1;
-        updateMedia();
+        updateMedia(isFavorite);
     };
 
     let nextButton = document.createElement('button');
@@ -179,7 +226,7 @@ export function createModal(isFavorite = false) {
     nextButton.innerHTML = '<i class="fa fa-arrow-circle-o-right"></i>';
     nextButton.onclick = function () {
         currentIndex = (currentIndex < PostList.length - 1) ? currentIndex + 1 : 0;
-        updateMedia();
+        updateMedia(isFavorite);
     };
 
     let paginator = document.createElement('div');
@@ -191,7 +238,7 @@ export function createModal(isFavorite = false) {
     firstButton.innerHTML = '<i class="fa fa-fast-backward"></i>';
     firstButton.onclick = function () {
         currentIndex = 0;
-        updateMedia();
+        updateMedia(isFavorite);
         updatePaginator();
     };
 
@@ -204,7 +251,7 @@ export function createModal(isFavorite = false) {
     lastButton.innerHTML = '<i class="fa fa-fast-forward"></i>';
     lastButton.onclick = function () {
         currentIndex = PostList.length - 1;
-        updateMedia();
+        updateMedia(isFavorite);
         updatePaginator();
     };
 

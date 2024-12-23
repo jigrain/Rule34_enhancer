@@ -5,6 +5,7 @@ let link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
 document.head.appendChild(link);
+let finalpage = 0;
 
 
 async function logMovies(tags) {
@@ -39,7 +40,9 @@ async function logMovies(tags) {
         console.log(`Processed page ${page}, collected ${PostList.length} media files.`);
     }
 
+    finalpage = page
     console.log(`Total collected ${PostList.length} media files.`);
+    console.log(`Last page ${finalpage}`);
 }
 
 async function processTags() {
@@ -51,7 +54,7 @@ async function processTags() {
 
         // Динамічний імпорт через import()
         import(chrome.runtime.getURL('utilities/gallery_ui/gallery_mod.js')).then((module) => {
-            module.createModal();  // Викликаємо створення модального вікна
+            module.createModal(false, finalpage);  // Викликаємо створення модального вікна
             module.showModal(0);    // Відкриваємо модальне вікно з першим елементом
         }).catch(err => {
             console.error("Error loading gallery_mod.js: ", err);
@@ -116,12 +119,6 @@ if (currentUrl.includes("page=post") && currentUrl.includes("s=list")) {
                 button3.className = 'button horizontal-button';
                 button3.innerHTML = '<i class="fa fa-photo-film"></i>';
                 horizontalButtons.appendChild(button3);
-
-                const button4 = document.createElement('button');
-                button4.id = "open-favourite-authors"
-                button4.className = 'button horizontal-button';
-                button4.innerHTML = '<i class="fa fa-address-book"></i>';
-                horizontalButtons.appendChild(button4);
 
                 // Додаємо горизонтальні кнопки до контейнера
                 buttonContainer.appendChild(horizontalButtons);

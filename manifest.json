@@ -14,7 +14,7 @@
     "user_favorites/progress_bar.js",
     "utilities/image_block.css",
     "main_search_panel.css",
-    "utilities/user_controll_panel/init_controll_panel.js"
+    "utilities/user_controll_panel/init_search-history.css"
   ],
   
   "permissions": [
@@ -36,7 +36,7 @@
   "content_scripts": [
     {
       "matches": ["*://rule34.xxx/index.php?page=post&s=list*"],
-	    "css": ["utilities/gallery_ui/galleryStyles.css", "main_search_panel.css"],
+	    "css": ["utilities/gallery_ui/galleryStyles.css", "main_search_panel.css", "utilities/user_controll_panel/init_search-history.css"],
       "js": ["main_search_img.js", "utilities/user_controll_panel/init_search-history.js", "utilities/user_controll_panel/init_saved-search.js"]
     },
 	{

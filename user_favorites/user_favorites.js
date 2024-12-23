@@ -33,7 +33,6 @@ style.innerHTML = `
     background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
     z-index: 1000;
@@ -41,11 +40,13 @@ style.innerHTML = `
 #openGalleryButton:hover {
     background-color: #45a049;
 }
+#searchButton:hover {
+    background-color: #45a049;
+}
 #search_input {
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border: none;
 }
 #favoritesCount {
     font-size: 12px;
@@ -57,7 +58,6 @@ style.innerHTML = `
     background-color: #FF8C00;
     color: white;
     border: none;
-    border-radius: 5px;
     font-size: 14px;
     cursor: pointer;
     padding: 10px;
