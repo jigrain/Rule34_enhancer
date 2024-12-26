@@ -36,10 +36,12 @@
   "content_scripts": [
     {
       "matches": ["*://rule34.xxx/index.php?page=post&s=list*"],
-	    "css": ["utilities/gallery_ui/galleryStyles.css", "main_search_panel.css", "utilities/user_controll_panel/init_search-history.css"],
-      "js": ["main_search_img.js", "utilities/user_controll_panel/init_search-history.js", "utilities/user_controll_panel/init_saved-search.js"]
+	    "css": ["utilities/gallery_ui/galleryStyles.css", "main_search_panel.css", "utilities/user_controll_panel/init_search-history.css", 
+      "utilities/user_controll_panel/init_saved-search.css", "utilities/user_controll_panel/init_saved_gallery.css"],
+      "js": ["main_search_img.js", "utilities/user_controll_panel/init_search-history.js", "utilities/user_controll_panel/init_saved-search.js",
+            "utilities/user_controll_panel/init_saved_gallery.js"]
     },
-	{
+	  {
       "matches": ["*://rule34.xxx/*"],
       "css": ["utilities/gallery_ui/galleryStyles.css"],
       "js": ["user_favorites/user_favorites.js"]
@@ -51,7 +53,8 @@
     },
     {
       "matches": ["*://rule34.xxx/index.php?page=post&s=view*"],
-      "js": ["utilities/resize_img_view.js"]
+      "css": ["main_search_panel.css"],
+      "js": ["utilities/resize_img_view.js", "utilities/post_like_panel.js"]
     }
   ],
   "options_page": "options.html"

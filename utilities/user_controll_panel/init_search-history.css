@@ -72,7 +72,7 @@
 }
 
 /* Пагінація */
-.pagination {
+.pagination-search-history {
     padding-top: 1%;
     display: flex;
     justify-content: center;

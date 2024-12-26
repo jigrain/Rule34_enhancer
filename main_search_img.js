@@ -84,6 +84,12 @@ if (currentUrl.includes("page=post") && currentUrl.includes("s=list")) {
                 const verticalButtons = document.createElement('div');
                 verticalButtons.className = 'vertical-buttons';
 
+                const addNewTagsToSavedButton = document.createElement('button');
+                addNewTagsToSavedButton.className = 'button vertical-button';
+                addNewTagsToSavedButton.id = 'addNewTagsToSavedButton';
+                addNewTagsToSavedButton.textContent = 'Save search tags';
+                verticalButtons.appendChild(addNewTagsToSavedButton);
+
                 const galleryModButton = document.createElement('button');
                 galleryModButton.className = 'button vertical-button';
                 galleryModButton.textContent = 'Gallery mod';

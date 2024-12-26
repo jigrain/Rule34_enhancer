@@ -12,7 +12,7 @@ modal.innerHTML = `
   <button id="close-modal" class="close-modal-button">×</button>
   <h2 class="modal-title">Search History</h2>
   <div id="history-content" class="history-content"></div>
-  <div id="pagination" class="pagination"></div>
+  <div id="pagination" class="pagination-search-history"></div>
 `;
 
 // Додаємо модальне вікно до сторінки
@@ -38,6 +38,21 @@ function fetchHistory() {
         }
     });
 }
+
+function openInNewTab(url) {
+    window.open(url, '_blank').focus();
+}
+
+async function copyTextToClipboard(textToCopy) {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  
 
 // Функція для рендерингу історії
 function renderHistory(items, page, maxPerPage) {
@@ -67,12 +82,12 @@ function renderHistory(items, page, maxPerPage) {
         let copyButton = document.createElement('button');
         copyButton.classList.add('history-copy-button');
         copyButton.textContent = 'Копіювати';
-        copyButton.addEventListener('click', () => copyToClipboard(item.title));
+        copyButton.addEventListener('click', () => copyTextToClipboard(item.title));
 
         let redirectButton = document.createElement('button');
         redirectButton.classList.add('history-redirect-button');
         redirectButton.textContent = 'Перейти';
-        redirectButton.addEventListener('click', () => redirectTo(item.url));
+        redirectButton.addEventListener('click', () => openInNewTab(item.url));
 
         entry.appendChild(date);
         entry.appendChild(title);
@@ -110,10 +125,10 @@ function renderHistoryPagination(container, totalPages, currentPage, items, maxP
 
     // Генерація кнопок для діапазону сторінок
     for (let i = startPage; i <= endPage; i++) {
-        const pageButton = createPageButton(i, i, () => renderHistory(items, i, maxPerPage));
+        const pageButton = createPagePaginatorButton(i, i, () => renderHistory(items, i, maxPerPage));
         if (i === currentPage) {
             pageButton.classList.add('pagination-button-active');
-        }else{
+        } else {
             pageButton.classList.add('pagination-button');
         }
         container.appendChild(pageButton);
