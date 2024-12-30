@@ -18,7 +18,7 @@ if (!document.querySelector('link[data-enhance-thumbnails]')) {
 
 document.body.insertAdjacentHTML(
     "afterbegin",
-    "<img id='img_hover_container' style='display:none; float:left; position:absolute; max-width:200px; overflow:hidden; z-index:9999;' src=''>"
+    "<img id='img_hover_container' class='img-hover-container' src=''>"
 );
 
 var img_type = "jpg";
@@ -161,6 +161,18 @@ function enhanceThumbnails() {
             postId
         );
 
+        const plusBtn = document.createElement("button");
+        plusBtn.className = "action-btn plus-btn";
+        plusBtn.setAttribute("id", "plusBtnId");
+        plusBtn.innerHTML = '<i class="fa fa-plus"></i>';
+        plusBtn.style.top = "50px"; // Нижче кнопки сердечка
+        thumb.appendChild(plusBtn);
+    
+        // Обробник натискання на кнопку з плюсом
+        plusBtn.addEventListener("click", function () {
+            openModalDialog(postId);
+        });
+
         // Створюємо кнопку з лупою
         const zoomBtn = document.createElement("button");
         zoomBtn.className = "action-btn zoom-btn show_full";
@@ -182,6 +194,154 @@ function enhanceThumbnails() {
         });
 
         thumb.appendChild(zoomBtn);
+    });
+}
+
+const dialog = document.createElement("dialog");
+dialog.id = "modal_dialog";
+dialog.className = "addToGalery-custom-modal";
+dialog.innerHTML = `
+    <div class="addToGalery-modal-header">
+        <button id="close_modal" class="addToGalery-modal-close-btn">&times;</button>
+        <h3 id="modal_title" class="addToGalery-modal-title">Додати пост в галерею</h3>
+    </div>
+    <div class="addToGalery-modal-tabs">
+        <button id="tab_existing_gallery" class="addToGalery-modal-tab-btn addToGalery-active-tab">Додати в галерею</button>
+        <button id="tab_new_gallery" class="addToGalery-modal-tab-btn">Створити нову</button>
+    </div>
+    <div id="tab_content_existing" class="addToGalery-tab-content addToGalery-active-tab-content">
+        <h4 class="addToGalery-tab-title">Існуючі галереї</h4>
+        <select id="gallery_select" class="addToGalery-modal-input"></select>
+        <button id="add_to_gallery" class="addToGalery-modal-btn primary-btn">Додати в обрану галерею</button>
+    </div>
+    <div id="tab_content_new" class="addToGalery-tab-content">
+        <h4 class="addToGalery-tab-title">Створити нову галерею</h4>
+        <input id="new_gallery_name" type="text" placeholder="Назва галереї" class="addToGalery-modal-input">
+        <button id="create_new_gallery" class="addToGalery-modal-btn success-btn">Створити і додати</button>
+    </div>
+`;
+document.body.appendChild(dialog);
+
+// Функція для переключення вкладок
+function setupTabSwitching() {
+    const tabExisting = document.getElementById("tab_existing_gallery");
+    const tabNew = document.getElementById("tab_new_gallery");
+    const contentExisting = document.getElementById("tab_content_existing");
+    const contentNew = document.getElementById("tab_content_new");
+
+    tabExisting.addEventListener("click", () => {
+        tabExisting.classList.add("addToGalery-active-tab");
+        tabNew.classList.remove("addToGalery-active-tab");
+        contentExisting.classList.add("addToGalery-active-tab-content");
+        contentNew.classList.remove("addToGalery-active-tab-content");
+    });
+
+    tabNew.addEventListener("click", () => {
+        tabNew.classList.add("addToGalery-active-tab");
+        tabExisting.classList.remove("addToGalery-active-tab");
+        contentNew.classList.add("addToGalery-active-tab-content");
+        contentExisting.classList.remove("addToGalery-active-tab-content");
+    });
+}
+
+
+// Функція для відкриття модального вікна
+function openModalDialog(postId) {
+    const modal = document.getElementById("modal_dialog");
+    const gallerySelect = document.getElementById("gallery_select");
+    const modalTitle = document.getElementById("modal_title");
+
+    modalTitle.textContent = `Додати пост #${postId} в галерею`;
+    gallerySelect.innerHTML = ""; // Очищуємо попередні опції
+
+    // Завантажуємо галереї з browser.storage.local
+    browser.storage.local.get("savedGalleryData").then((result) => {
+        const galleries = result.savedGalleryData || [];
+        galleries.forEach((gallery) => {
+            const option = document.createElement("option");
+            option.value = gallery.name;
+            option.textContent = gallery.name;
+            gallerySelect.appendChild(option);
+        });
+    });
+
+    // Прив'язуємо постId до кнопок
+    const addToGalleryBtn = document.getElementById("add_to_gallery");
+    const createNewGalleryBtn = document.getElementById("create_new_gallery");
+
+    addToGalleryBtn.onclick = () => addPostToGallery(postId);
+    createNewGalleryBtn.onclick = () => createNewGalleryAndAddPost(postId);
+
+    if (modal) {
+        modal.showModal();
+        setupTabSwitching();
+    }
+}
+
+// Обробник закриття модального вікна
+document.getElementById("close_modal").addEventListener("click", function () {
+    const modal = document.getElementById("modal_dialog");
+    if (modal) {
+        modal.close();
+    }
+});
+
+function addPostToGallery(postId) {
+    const galleryName = document.getElementById("gallery_select").value;
+    if (!galleryName) {
+        alert("Виберіть галерею!");
+        return;
+    }
+
+    browser.storage.local.get("savedGalleryData").then((result) => {
+        const galleries = result.savedGalleryData || [];
+        const gallery = galleries.find((g) => g.name === galleryName);
+
+        if (!gallery) {
+            alert("Галерея не знайдена!");
+            return;
+        }
+
+        // Перевіряємо, чи пост вже існує в галереї
+        if (gallery.content.some((post) => post.postId === postId)) {
+            alert("Цей пост вже додано в галерею!");
+            return;
+        }
+
+        // Додаємо пост в галерею
+        gallery.content.push({ postId, url: "", type: "" });
+        browser.storage.local.set({ savedGalleryData: galleries });
+        alert(`Пост #${postId} додано до галереї ${galleryName}`);
+    });
+}
+
+// Функція для створення нової галереї і додання поста
+function createNewGalleryAndAddPost(postId) {
+    const newGalleryName = document.getElementById("new_gallery_name").value.trim();
+    if (!newGalleryName) {
+        alert("Введіть назву для нової галереї!");
+        return;
+    }
+
+    browser.storage.local.get("savedGalleryData").then((result) => {
+        const galleries = result.savedGalleryData || [];
+        const galleryExists = galleries.some((g) => g.name === newGalleryName);
+
+        if (galleryExists) {
+            alert("Галерея з такою назвою вже існує!");
+            return;
+        }
+
+        // Створюємо нову галерею і додаємо пост
+        const newGallery = {
+            name: newGalleryName,
+            content: [{ postId, url: "", type: "" }],
+            tags: [],
+            favorite: false,
+        };
+        galleries.push(newGallery);
+        browser.storage.local.set({ savedGalleryData: galleries });
+        alert(`Галерея ${newGalleryName} створена і пост #${postId} додано!`);
     });
 }
 

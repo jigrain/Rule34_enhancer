@@ -25,7 +25,10 @@ browser.runtime.onInstalled.addListener(() => {
     browser.contextMenus.create({
       id: 'togglePixelation',
       title: 'Перемкнути пікселізацію зображень',
-      contexts: ['all']
+      contexts: ['all'],
+      documentUrlPatterns: [
+        "*://rule34.xxx/*"
+      ]
     });
   });
   

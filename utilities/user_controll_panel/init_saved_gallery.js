@@ -1,4 +1,5 @@
 // Глобальні змінні
+(() => {
 const savedGalleryKey = 'savedGalleryData';
 let savedGalleries = []; // Масив для галерей
 let selectedGalleriesTags = []; // Виділені теги
@@ -238,4 +239,4 @@ function deleteGallery(name) {
 initializeGalleryStorage();
 
 document.getElementById('open-user-albums').addEventListener('click', openSavedGalleryModal);
-
+})();
