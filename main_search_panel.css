@@ -1,0 +1,82 @@
+.panel {
+    background-color: #93c393;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px; /* Applied directly */
+    display: flex;
+    flex-direction: column;
+    min-width: 145px;
+    min-height: 100px;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Applied directly */
+    flex-grow: 1;
+}
+
+.vertical-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Applied directly */
+}
+
+.horizontal-buttons {
+     display: flex;
+    justify-content: center;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    gap: 3px;
+}
+
+.horizontal-button {
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 70px;
+    max-height: 70px;
+}
+
+.button {
+    border: none;
+    background-color: hsl(115.1, 26.2%, 45.7%);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.vertical-button {
+    padding: 10px;
+}
+
+.divider {
+    height: 2px;
+    background-color: #e0e0e0;
+    margin: 7px 0; /* Applied directly */
+}
+
+
+.post_panel {
+    background-color: #93c393;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px; /* Applied directly */
+    display: flex;
+    flex-direction: column;
+    min-width: 145px;
+    min-height: 70px;
+    margin-top: 8px;
+    margin-bottom: 10px;
+}
+
+.post_horizontal-buttons {
+    display: flex;
+    justify-content: center;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    gap: 12px;
+}
+

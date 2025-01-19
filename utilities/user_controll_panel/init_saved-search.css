@@ -1,0 +1,155 @@
+.main-modal-window {
+    width: 80%;
+    height: 90%;
+    padding: 20px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    font-family: Arial, sans-serif;
+    background: hsl(114, 56%, 77%);
+    position: fixed; /* Фіксоване позиціонування */
+    overflow-y: auto;
+}
+
+/* Заголовок модального вікна */
+.modal-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* Стилі форми пошуку */
+.modal-search-form {
+    width: 95%;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Відступ між елементами */
+    justify-content: center;
+    margin-bottom: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.modal-search-form input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.modal-search-form input[type="submit"] {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#search-button, #search-button-gallery{
+    background-color: #007BFF;
+}
+
+#add-button, #add-button-gallery {
+    background-color: #28A745;
+}
+
+/* Стилі секції з тегами */
+.select-tags-section-tags, .select-tags-section-gallery{
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Відступ між елементами */
+    margin-bottom: 15px;
+    justify-content: flex-start; /* Вирівнювання до лівого краю */
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tag-button-tags, .tag-button-gallery {
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #555;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.tag-button-tags.selected, .tag-button-gallery.selected{
+    background-color: #007BFF;
+    color: #fff;
+}
+
+/* Контент тегів */
+#tag-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+/* Стиль запису тегу */
+.tag-entry {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: none;
+    background: #6cb76c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    gap: 10px;
+}
+
+.tag-entry .tag-label {
+    margin-right: auto; /* Вирівнює назву вліво */
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.tag-entry .tag-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.tag-entry .delete-button {
+    color: #DC3545;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.tag-entry .favorite-button {
+    color: #FFC107;
+    border: none;
+    background: none;
+    cursor: pointer;
+
+}
+
+.sendButton {
+    color: white;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.tag-container {
+    margin-left: auto; /* Вирівнює контейнер тегів праворуч */
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap; /* Якщо тегів багато, вони переходять на новий рядок */
+}
+
+.tag {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: #495057;
+    display: inline-block;
+}

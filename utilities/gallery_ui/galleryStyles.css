@@ -1,0 +1,245 @@
+/* galleryStyles.css */
+
+/* Стилі для модального вікна */
+#mediaModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+  display: none;
+}
+
+
+/* Обгортка для контенту в модальному вікні */
+#mediaModal .contentWrapper {
+  position: absolute;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#mediaModal .mediaWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Кнопка закриття */
+#mediaModal .closeButton {
+  pointer-events: auto;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* Іконка серця */
+#heart_icon {
+  pointer-events: auto;
+  color: red;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* Стилі для елементів зображення та відео */
+#gallery_img,
+#gallery_video {
+  display: none;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  margin: auto;
+}
+
+/* Стилі для навігаційних кнопок */
+#mediaModal .navButton {
+  pointer-events: auto;
+  border: none;
+  background: transparent;
+  position: absolute;
+  color: white;
+  font-size: 50px;
+  cursor: pointer;
+}
+
+#mediaModal .prevButton {
+  left: 10px;
+}
+
+#mediaModal .nextButton {
+  right: 10px;
+}
+
+.paginator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; /* Відстань між кнопками і текстом */
+  font-size: 1vw !important;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.5); /* Напівпрозорий фон */
+  color: rgb(255, 255, 255);
+  padding: 1vw 1vw !important;
+  border-radius: 10px;
+}
+
+/* Стиль для кнопки переходу до першого елементу */
+#mediaModal .firstButton {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 25px;
+  left: 30%;
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* Стиль для кнопки переходу до останнього елементу */
+#mediaModal .lastButton {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 25px;
+  right: 30%;
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.paginator button:hover {
+  background-color: #45a049;
+}
+
+/* Стилі для кнопки toggle_controls */
+#toggle_controls {
+  pointer-events: auto;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.hidden-controls {
+  opacity: 0;
+  transition: all 0.2s; /* Use a transition if you want */
+}
+
+.hidden-controls:hover {
+  opacity: 1;
+}
+
+#open_link {
+  pointer-events: auto;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#open_tags {
+  pointer-events: auto;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#open_tags:hover {
+  opacity: 0.7;
+}
+
+#mediaModal .tall-image {
+  max-height: unset; /* Знімаємо обмеження на висоту */
+  object-fit: contain; /* Забезпечує правильне пропорційне масштабування */
+}
+
+#mediaModal .mediaWrapper-tall {
+  height: 90vh; /* Висота обмежена вікном */
+  overflow-y: auto; /* Дозволяє вертикальну прокрутку */
+  overflow-x: hidden; /* Забороняє горизонтальну прокрутку */
+  position: relative;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 10px; /* Відстань між кнопками */
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  z-index: 1;
+}
+
+.buttonContainer i {
+  font-size: 30px;
+  color: white;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.buttonContainer i:hover {
+  opacity: 0.7; /* Ефект при наведенні */
+}
+
+
+#tagsPanel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 15vw;
+  height: calc(100vh - 20px);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  z-index: 1000; /* Поверх усіх інших елементів */
+  overflow-y: auto; /* Прокрутка, якщо список довгий */
+  transform: translateX(0%); /* Початково прихована */
+  transition: transform 0.3s ease; /* Анімація відкриття/закриття */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#tagsPanel.hidden {
+  transform: translateX(-100%); /* Ховається за межі екрана */
+}
+
+#tagsPanel h3.tagSectionHeader {
+  margin-top: 20px;
+  font-size: 18px;
+  text-transform: uppercase;
+  border-bottom: 1px solid white;
+  padding-bottom: 5px;
+}
+
+#tagsPanel ul.tagList {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+#tagsPanel ul.tagList li.tagItem {
+  margin: 5px 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#tagsPanel ul.tagList li.tagItem:hover {
+  text-decoration: underline;
+  color: #45a049; /* Колір при наведенні */
+}

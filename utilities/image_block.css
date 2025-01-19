@@ -1,0 +1,195 @@
+.thumb {
+    position: relative;
+    display: inline-block;
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.thumb:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+.thumb img {
+    object-fit: cover;
+}
+
+.action-btn {
+    position: absolute;
+    top: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: white;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 10%;
+    font-size: 18px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thumb:hover .action-btn {
+    opacity: 1;
+}
+
+.heart-btn {
+    left: 10px;
+}
+
+.zoom-btn {
+    right: 10px;
+}
+
+.popup-image {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    max-width: 90%;
+    max-height: 90%;
+    border: 3px solid white;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    display: none;
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.plus-btn {
+    left: 10px;
+    margin-top: 53%;
+    background-color: rgba(0, 128, 0, 0.6); 
+}
+
+#img_hover_container {
+    display: none;
+    float: left;
+    position: absolute;
+    max-width: 200px;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+
+/* Модальне вікно */
+.addToGalery-custom-modal {
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    width: 400px;
+    max-width: 90%;
+    font-family: Arial, sans-serif;
+}
+
+/* Заголовок модального вікна */
+.addToGalery-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.addToGalery-modal-title {
+    margin: 0;
+    font-size: 20px;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.addToGalery-modal-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+}
+
+.addToGalery-modal-tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    background: #f0f0f0;
+    font-size: 16px;
+    text-align: center;
+    color: #333;
+    transition: background 0.3s;
+    border-radius: 5px 5px 0 0;
+}
+/* Кнопка закриття */
+.addToGalery-modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-weight: bold;
+}
+
+.addToGalery-tab-title {
+    padding-bottom: 15px;
+}
+
+.addToGalery-modal-tab-btn:hover {
+    background: #ddd;
+}
+
+.addToGalery-active-tab {
+    background: #007bff;
+    color: white;
+}
+
+/* Контент вкладок */
+.addToGalery-tab-content {
+    display: none;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
+
+.addToGalery-active-tab-content {
+    display: block;
+}
+
+/* Поля вводу */
+.addToGalery-modal-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Кнопки */
+.addToGalery-modal-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+}
+
+.addToGalery-primary-btn {
+    background: #007bff;
+}
+
+.addToGalery-success-btn {
+    background: #28a745;
+}

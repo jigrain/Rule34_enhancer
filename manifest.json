@@ -1,0 +1,62 @@
+{
+  "description": "Adds some features to the rule34.xxx website interface ",
+  "manifest_version": 2,
+  "name": "Rule34 Enhancer",
+  "version": "1.0",
+  "homepage_url": "https://github.com/jigrain/Rule34_enhancer",
+  "icons": {
+    "64": "icons/icon.png"
+  },
+  "web_accessible_resources": [
+    "utilities/gallery_ui/galleryStyles.css",
+    "utilities/gallery_ui/gallery_mod.js",
+    "user_favorites/progress_bar.js",
+    "user_favorites/settings_button.js",
+    "utilities/image_block.css",
+    "main_search_panel.css",
+    "utilities/user_controll_panel/init_search-history.css"
+  ],
+
+  "permissions": [
+    "https://api.rule34.xxx/*",
+    "https://api-cdn.rule34.xxx/*",
+	  "storage",          
+    "activeTab", 
+	  "cookies",
+	  "tabs",
+	  "https://wimg.rule34.xxx/*",
+	  "https://rule34.xxx/*",
+    "contextMenus",
+    "history"
+  ],
+   "background": {
+    "scripts": ["user_favorites/user_favorites_background.js", "user_favorites/get_user_id.js", "utilities/pixelize_background.js", 
+    "utilities/user_controll_panel/background_search-history.js", "utilities/gallery_ui/gallery_mod_background.js"]
+	},
+
+  "content_scripts": [
+    {
+      "matches": ["*://rule34.xxx/index.php?page=post&s=list*"],
+	    "css": ["utilities/gallery_ui/galleryStyles.css", "main_search_panel.css", "utilities/user_controll_panel/init_search-history.css", 
+      "utilities/user_controll_panel/init_saved-search.css", "utilities/user_controll_panel/init_saved_gallery.css"],
+      "js": ["main_search_img.js", "utilities/user_controll_panel/init_search-history.js", "utilities/user_controll_panel/init_saved-search.js",
+            "utilities/user_controll_panel/init_saved_gallery.js"]
+    },
+	  {
+      "matches": ["*://rule34.xxx/index.php?page=favorites*"],
+      "css": ["utilities/gallery_ui/galleryStyles.css"],
+      "js": ["user_favorites/user_favorites.js", "lib/jszip.min.js"]
+    },
+    {
+      "matches": ["*://rule34.xxx/*"],
+      "css": ["utilities/image_block.css"],
+      "js": ["utilities/pixelize.js", "utilities/image_block.js", "utilities/main_search_content.js"]
+    },
+    {
+      "matches": ["*://rule34.xxx/index.php?page=post&s=view*"],
+      "css": ["main_search_panel.css"],
+      "js": ["utilities/resize_img_view.js"]
+    }
+  ],
+  "options_page": "options.html"
+}

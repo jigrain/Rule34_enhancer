@@ -1,0 +1,113 @@
+/* Модальне вікно */
+.search-history-modal {
+    width: 80%;
+    height: 82%;
+    padding: 20px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    font-family: Arial, sans-serif;
+    overflow-y: auto;
+    background: hsl(114, 56%, 77%);
+}
+
+/* Кнопка закриття */
+.close-modal-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: none;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #555;
+}
+
+/* Заголовок модального вікна */
+.modal-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Контент історії */
+.history-content {
+    margin-bottom: 20px;
+}
+
+/* Елемент історії */
+.history-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #6cb76c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовок історії */
+.history-title {
+    flex-grow: 1;
+    text-align: left;
+    color: #000;
+}
+
+/* Дата */
+.history-date {
+    margin-right: 10px;
+    color: #000;
+}
+
+/* Кнопка копіювання */
+.history-copy-button,
+.history-redirect-button {
+    margin-left: 10px;
+    padding: 5px;
+    cursor: pointer;
+    background-color: hsl(115.1, 26.2%, 45.7%);
+    color: #fff;
+    border: none;
+    font-size: 14px;
+}
+
+/* Пагінація */
+.pagination-search-history {
+    padding-top: 1%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pagination-button {
+    padding: 5px 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    border: none;
+    background-color: #6cb76c;
+}
+
+.pagination-button:hover {
+    background-color: #e0e0e0;
+    color: #000;
+}
+
+.pagination-button-scroll {
+    font-size: 16px; /* Збільшений розмір для іконок */
+    color: #007BFF;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.3s;
+}
+
+.pagination-button-scroll:hover {
+    color: #0056b3;
+}
+
+.pagination-button-active {
+    border: none;
+    background-color: hsl(115.1, 26.2%, 45.7%);
+    color: #fff;
+}
