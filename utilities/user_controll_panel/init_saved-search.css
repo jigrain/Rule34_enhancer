@@ -153,3 +153,20 @@
     color: #495057;
     display: inline-block;
 }
+
+.favorite-checkbox-label {
+    margin-left: auto; /* Вирівнює чекбокс праворуч */
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.favorite-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #FFC107; /* Колір, щоб відповідати кнопці "favorite" */
+    cursor: pointer;
+}

@@ -28,6 +28,11 @@ modal_gallery_manager.innerHTML = `
     ${allGalleriesTags.map(tag => `
         <button class="tag-button-gallery" data-tag="${tag}">${tag}</button>
     `).join('')}
+
+    <label class="favorite-checkbox-label">
+        <input type="checkbox" id="gallery-favorite-checkbox" class="favorite-checkbox">
+        Favorites
+    </label>
   </div>
   
   <div id="gallery-content"></div>
@@ -46,6 +51,13 @@ function openSavedGalleryModal() {
     loadSavedGalleries();
     modal_gallery_manager.showModal();
 }
+
+const galleryFavoriteCheckbox = document.getElementById('gallery-favorite-checkbox');
+galleryFavoriteCheckbox.addEventListener('change', () => {
+    const query = document.getElementById('search-input-gallery').value.trim();
+    const filtered = filterGalleries(query); // Перефільтровуємо галереї
+    renderGalleries(filtered, 1, 9); // Оновлюємо відображення галерей
+});
 
 // Ініціалізація сховища
 function initializeGalleryStorage() {
@@ -189,6 +201,7 @@ function renderGalleries(items, page, maxPerPage) {
         buttonsContainer.className = 'block-buttons';
 
         let favoriteToggle = document.createElement('button');
+        favoriteToggle.className = 'favorite-button';
         favoriteToggle.innerHTML = item.favorite
             ? '<i class="fas fa-star fa-lg"></i>'
             : '<i class="far fa-star fa-lg"></i>';
@@ -198,7 +211,8 @@ function renderGalleries(items, page, maxPerPage) {
         });
 
         let deleteButton = document.createElement('button');
-        deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        deleteButton.className = 'delete-button';
+        deleteButton.innerHTML = '<i class="fas fa-square-minus fa-lg"></i>';
         deleteButton.addEventListener('click', () => {
             deleteGallery(item.name);
         });

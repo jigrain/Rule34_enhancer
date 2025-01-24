@@ -27,6 +27,11 @@ modal_saved_search.innerHTML = `
     ${allTags.map(tag => `
         <button class="tag-button-tags" data-tag="${tag}">${tag}</button>
     `).join('')}
+
+    <label class="favorite-checkbox-label">
+        <input type="checkbox" id="favorite-checkbox" class="favorite-checkbox">
+        Favorites
+    </label>
     </div>
   
   <div id="tag-content"></div>
@@ -59,6 +64,13 @@ function initializeStorage() {
         console.error('Помилка при отриманні:', err);
     });
 }
+
+const favoriteCheckbox = document.getElementById('favorite-checkbox');
+favoriteCheckbox.addEventListener('change', () => {
+    const query = document.getElementById('search-input').value.trim();
+    const filtered = filterTags(query); // Повторно застосовуємо фільтри
+    renderTags(filtered, 1, 10); // Оновлюємо відображення
+});
 
 // Події для кнопок "Add" та "Search"
 document.getElementById('search-button').addEventListener('click', () => {
@@ -162,11 +174,17 @@ function loadSavedTags() {
 
 // Фільтрація стрічок
 function filterTags(query) {
-    return savedStrings.filter(item =>
-        item.tag.toLowerCase().includes(query.toLowerCase()) &&
-        selectedTags.every(tag => item.tags.includes(tag))
-    );
+    const isFavoriteChecked = document.getElementById('favorite-checkbox').checked;
+
+    return savedStrings.filter(item => {
+        const matchesQuery = item.tag.toLowerCase().includes(query.toLowerCase());
+        const matchesTags = selectedTags.every(tag => item.tags.includes(tag));
+        const matchesFavorite = !isFavoriteChecked || item.favorite === true; // Додаємо перевірку чекбоксу
+
+        return matchesQuery && matchesTags && matchesFavorite;
+    });
 }
+
 
 function openInNewTabSavedTags(url) {
     url = url.replace(" ", "+")

@@ -24,6 +24,21 @@
 
 ---
 
+## **Gallery mode**
+
+<img src="assets/Gallery_mod.gif" alt="Alt text" width="80%" />
+
+This is a image viewer in a convenient gallery format. Just set the tags you like, search and enjoy your browsing.
+
+### 🎯 **Main functions**  
+- Adding selected post to the list of favorites with a heart button.
+- Hide the gallery interface through the eye button.
+- Function to open the selected post in a new tab.
+- Sidebar to view tags of the selected post.
+- Buttons for scrolling backwards and forwards in the gallery, as well as scrolling to the start and end.
+- The arrows on the keyboard also work
+---
+
 ## ✨ **Introduction**
 
 **AwesomeProject** is a [brief description of what the project does].  

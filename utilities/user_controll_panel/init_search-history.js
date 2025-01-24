@@ -81,12 +81,12 @@ function renderHistory(items, page, maxPerPage) {
 
         let copyButton = document.createElement('button');
         copyButton.classList.add('history-copy-button');
-        copyButton.textContent = 'Копіювати';
+        copyButton.textContent = 'copy';
         copyButton.addEventListener('click', () => copyTextToClipboard(item.title));
 
         let redirectButton = document.createElement('button');
         redirectButton.classList.add('history-redirect-button');
-        redirectButton.textContent = 'Перейти';
+        redirectButton.textContent = 'search';
         redirectButton.addEventListener('click', () => openInNewTab(item.url));
 
         entry.appendChild(date);
